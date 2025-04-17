@@ -1,0 +1,244 @@
+body {
+  background-color: #121212;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  padding-top: 80px;
+}
+
+h1,
+h2 {
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  margin: 0 auto 20px auto; /* Top: 0, Horizontal: auto, Bottom: 20px */
+  text-align: center;
+}
+
+.transparent-box {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px); /* for Safari */
+}
+
+.page-title {
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-align: center;
+  display: inline-block;
+  margin: 0 auto 1rem;
+}
+
+a,
+.nav-link {
+  color: #00bfff;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+a:hover,
+.nav-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 5px #00bfff;
+}
+
+.navbar {
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neon {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #00bfff;
+  text-shadow: 0 0 5px #00bfff;
+}
+
+.btn-neon-sm {
+  background-color: #00bfff;
+  color: #121212;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-neon-sm:hover {
+  background-color: #008fcc;
+  color: white;
+}
+
+.card,
+.container,
+.form-control,
+.form-select {
+  background-color: #1e1e1e;
+  /* border: 1px solid #2e2e2e; */
+  border-radius: 12px;
+  color: white;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.login-card {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 191, 255, 0.3);
+  max-width: 400px;
+  margin: 10vh auto;
+  color: white;
+}
+
+.form-control {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #00bfff;
+  border-radius: 0;
+  color: white;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-bottom: 1px solid #00ffff;
+}
+
+.btn-login {
+  background-color: #00bfff;
+  border: none;
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #121212;
+}
+
+.btn-login:hover {
+  background-color: #009acd;
+  color: white;
+}
+
+.form-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-label i {
+  color: #00bfff;
+}
+.galaxy-navbar {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 191, 255, 0.2);
+}
+
+.navbar-brand.neon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00bfff;
+  text-shadow: 0 0 6px #00bfff;
+}
+
+.nav-link {
+  color: #eee;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #00bfff;
+  text-shadow: 0 0 4px #00bfff;
+}
+.container {
+  background: transparent !important;
+}
+.btn-neon-sm {
+  background-color: #00bfff;
+  color: #000;
+  border: none;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn-neon-sm:hover {
+  background-color: #009acd;
+  color: #fff;
+}
+.card-alt-a {
+  background-color: #1e1e1e;
+}
+
+.card-alt-b {
+  background-color: #414141;
+}
+.alert.fade {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+@media (max-width: 767px) {
+  .match-header-container h5 {
+    text-align: center !important;
+  }
+}
+@media (max-width: 576px) {
+  .table th,
+  .table td {
+    font-size: 0.85rem;
+    padding: 0.3rem;
+  }
+}
+.table td,
+.table th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table td:first-child,
+.table th:first-child {
+  text-align: left;
+}
+
+.table {
+  font-size: 0.95rem;
+}
+
+.brand-typewriter {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  color: #00ccff;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid rgba(255, 255, 255, 0.75);
+  animation: typing 2s steps(20, end), blink 0.8s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 160px;
+  } /* Adjust based on text width */
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}

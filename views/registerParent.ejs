@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+<!-- Neon Parent Registration Page -->
+<div class="page-center mx-3">
+  <div class="container">
+    <div class="card shadow p-4">
+      <h2 class="text-center mb-4">👨‍👩‍👧 Parent Registration</h2>
+
+      <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+      <% } %>
+
+      <form action="/register/parent" method="POST">
+        <div class="mb-3">
+          <label for="firstName" class="form-label">First Name</label>
+          <input type="text" name="firstName" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="lastName" class="form-label">Last Name</label>
+          <input type="text" name="lastName" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="mobileNumber" class="form-label">Mobile Number</label>
+          <input
+            type="tel"
+            name="mobileNumber"
+            id="mobileNumber"
+            class="form-control"
+            required
+            placeholder="07XXXXXXXXX"
+            pattern="07[0-9]{9}"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="linkedPlayer" class="form-label">Link to Player</label>
+          <select name="linkedPlayer" class="form-select" required>
+            <% players.forEach(player => { %>
+            <option value="<%= player._id %>">
+              <%= player.firstName %> <%= player.lastName %> - <%=
+              player.position %>
+            </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="text-center">
+          <button class="btn btn-neon-sm">Register as Parent</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

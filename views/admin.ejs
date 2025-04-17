@@ -1,0 +1,94 @@
+<%- include('partials/header') %>
+
+<div class="page-center">
+  <div
+    class="container transparent-box"
+    style="
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    "
+  >
+  <div
+  class="card shadow p-4 text-white"
+  style="
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  "
+>
+  <h2 class="text-center mb-4">🛠 Admin Dashboard</h2>
+
+  <% if (messages.success) { %>
+  <div class="alert alert-success text-center">
+    <%= messages.success[0] %>
+  </div>
+  <% } %>
+  <% if (messages.error) { %>
+  <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+  <% } %>
+
+  <div class="d-grid gap-2" style="max-width: 300px; margin: 0 auto">
+    <a href="/" class="btn btn-primary w-100">🏠 Back to Home</a>
+
+    <form method="POST" action="/admin/submit-parent-motm" class="d-grid">
+      <button class="btn btn-danger w-100">📣 Reveal winner of MOTM</button>
+    </form>
+
+    <button
+      class="btn btn-outline-warning w-100"
+      data-bs-toggle="modal"
+      data-bs-target="#resetParentVotesModal"
+    >
+      🔁 Reset Parent Votes
+    </button>
+
+    <a href="/admin/live-match" class="btn btn-outline-success w-100">
+      📡 Start Live Match
+    </a>
+
+    <a href="/matches" class="btn btn-info w-100">📅 Match Results</a>
+
+    <a href="/admin/players/new" class="btn btn-success w-100">
+      ➕ Add New Player
+    </a>
+
+    <a href="/admin/users" class="btn btn-outline-info mb-3 w-100">
+      👥 View Registered Users
+    </a>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  // Auto-hide flash messages
+  setTimeout(() => {
+    const alert = document.querySelector('.alert');
+    if (alert) {
+      alert.classList.add('fade');
+      setTimeout(() => alert.remove(), 500);
+    }
+  }, 4000);
+
+  // Delete modal data setup
+  const deleteModal = document.getElementById('globalDeletePlayerModal');
+  deleteModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const playerId = button.getAttribute('data-player-id');
+    const playerName = button.getAttribute('data-player-name');
+
+    const form = document.getElementById('deletePlayerForm');
+    const namePlaceholder = document.getElementById('playerNamePlaceholder');
+
+    form.action = `/admin/players/${playerId}?_method=DELETE`;
+    namePlaceholder.textContent = playerName;
+  });
+</script>

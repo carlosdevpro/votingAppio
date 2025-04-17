@@ -1,0 +1,179 @@
+<%- include('partials/header') %>
+
+<div class="page-center">
+  <div class="container">
+    <div class="card shadow p-4" style="max-width: 700px; margin: 0 auto">
+      <h2 class="text-center mb-4">✍️ Create Match Result</h2>
+
+      <% if (messages.success) { %>
+      <div class="alert alert-success text-center">
+        <%= messages.success[0] %>
+      </div>
+      <% } %> <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+      <% } %>
+
+      <form method="POST" action="/admin/create-match" id="matchForm">
+        <!-- Wombwell Team Toggle Buttons -->
+        <div class="mb-3 d-flex justify-content-center gap-2">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            onclick="setWombwellTeam('home')"
+          >
+            🏠 Wombwell Home
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            onclick="setWombwellTeam('away')"
+          >
+            🚌 Wombwell Away
+          </button>
+        </div>
+
+        <!-- Home Team + Score -->
+        <div class="mb-3 d-flex gap-2">
+          <input
+            type="text"
+            class="form-control"
+            id="homeTeam"
+            name="homeTeam"
+            placeholder="Home Team"
+            required
+          />
+          <input
+            type="number"
+            class="form-control"
+            id="homeScore"
+            name="homeScore"
+            value="0"
+            min="0"
+            required
+            placeholder="Score"
+          />
+        </div>
+
+        <!-- Away Team + Score -->
+        <div class="mb-3 d-flex gap-2">
+          <input
+            type="text"
+            class="form-control"
+            id="awayTeam"
+            name="awayTeam"
+            placeholder="Away Team"
+            required
+          />
+          <input
+            type="number"
+            class="form-control"
+            id="awayScore"
+            name="awayScore"
+            value="0"
+            min="0"
+            required
+            placeholder="Score"
+          />
+        </div>
+
+        <!-- Scorers and Assists -->
+        <div class="mb-3">
+          <label class="form-label">Add Scorer</label>
+          <div class="d-flex gap-2 mb-2">
+            <select id="scorerName" class="form-select">
+              <% players.forEach(player => { %>
+              <option value="<%= player.firstName %> <%= player.lastName %>">
+                <%= player.firstName %> <%= player.lastName %>
+              </option>
+              <% }) %>
+            </select>
+            <select id="assistName" class="form-select">
+              <option value="">No assist</option>
+              <% players.forEach(player => { %>
+              <option value="<%= player.firstName %> <%= player.lastName %>">
+                <%= player.firstName %> <%= player.lastName %>
+              </option>
+              <% }) %>
+            </select>
+            <button type="button" class="btn btn-success" onclick="addScorer()">
+              Add
+            </button>
+          </div>
+
+          <ul class="list-group mb-2" id="scorerList"></ul>
+          <input type="hidden" name="scorers" id="scorersInput" />
+        </div>
+
+        <div class="text-center">
+          <button class="btn btn-primary">✅ Save Match</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scorerList = document.getElementById('scorerList');
+  const scorersInput = document.getElementById('scorersInput');
+  const scorers = [];
+
+  function renderScorers() {
+    scorerList.innerHTML = '';
+    scorers.forEach((scorer, index) => {
+      const li = document.createElement('li');
+      li.className =
+        'list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `
+      ${scorer.name} ${
+        scorer.assist ? '(Assisted by ' + scorer.assist + ')' : ''
+      }
+      <button class="btn btn-sm btn-danger" onclick="removeScorer(${index})">❌</button>
+    `;
+      scorerList.appendChild(li);
+    });
+    scorersInput.value = JSON.stringify(scorers);
+  }
+
+  function addScorer() {
+    const name = document.getElementById('scorerName').value;
+    const assist = document.getElementById('assistName').value;
+
+    if (!name) return;
+
+    scorers.push({ name, goals: 1, assist });
+    renderScorers();
+  }
+
+  function removeScorer(index) {
+    scorers.splice(index, 1);
+    renderScorers();
+  }
+
+  document.getElementById('matchForm').addEventListener('submit', function (e) {
+    const homeScore = parseInt(document.getElementById('homeScore').value);
+    const awayScore = parseInt(document.getElementById('awayScore').value);
+    if ((homeScore > 0 || awayScore > 0) && scorers.length === 0) {
+      alert('Please add at least one scorer if goals are greater than 0.');
+      e.preventDefault();
+    }
+  });
+
+  renderScorers();
+</script>
+<script>
+  function setWombwellTeam(position) {
+    if (position === 'home') {
+      document.getElementById('homeTeam').value = 'Wombwell Town';
+      document.getElementById('homeTeam').readOnly = true;
+      document.getElementById('awayTeam').value = '';
+      document.getElementById('awayTeam').readOnly = false;
+    } else {
+      document.getElementById('awayTeam').value = 'Wombwell Town';
+      document.getElementById('awayTeam').readOnly = true;
+      document.getElementById('homeTeam').value = '';
+      document.getElementById('homeTeam').readOnly = false;
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

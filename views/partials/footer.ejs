@@ -1,0 +1,54 @@
+</div> <!-- Close container -->
+<script>
+  const secretEl = document.getElementById('secretTrigger');
+  let pressTimer;
+
+  if (secretEl) {
+    secretEl.addEventListener('mousedown', () => {
+      pressTimer = setTimeout(() => {
+        window.location.href = '/admin/secret-tools';
+      }, 5000); // 5 seconds
+    });
+
+    ['mouseup', 'mouseleave'].forEach((e) => {
+      secretEl.addEventListener(e, () => clearTimeout(pressTimer));
+    });
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Flash message auto-hide
+  setTimeout(() => {
+    const flash = document.getElementById('flash-message');
+    if (flash) flash.style.display = 'none';
+  }, 3000);
+
+  // Spinner logic
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('✅ DOM loaded - running spinner hide logic');
+
+    const spinner = document.getElementById('loading-spinner');
+    const content = document.getElementById('main-content');
+
+    console.log('👀 Spinner found:', spinner !== null);
+    console.log('👀 Main content found:', content !== null);
+
+    if (spinner && content) {
+      setTimeout(() => {
+        spinner.classList.add('d-none');
+        content.classList.remove('d-none');
+        console.log('✅ Spinner hidden, content shown');
+      }, 1500);
+    } else {
+      console.warn('❌ Spinner or content not found in DOM');
+    }
+  });
+</script>
+
+
+
+
+</body>
+</html>

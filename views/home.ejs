@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+
+<!-- Neon Home Page with Transparent Background -->
+<div class="page-center">
+  <div class="container d-flex justify-content-center mt-4">
+    <div class="transparent-box w-100" style="max-width: 550px">
+      <div
+        class="card p-4 shadow text-center homepage-card bg-transparent border-0"
+      >
+        <% if (user) { %>
+        <p class="lead">
+          Hello, <strong><%= user.firstName %> <%= user.lastName %></strong>!
+        </p>
+
+        <% if (!user.isPlayer && user.linkedPlayer) { %>
+        <p>
+          Linked to:
+          <strong>
+            <%= user.linkedPlayer.firstName %> <%= user.linkedPlayer.lastName %>
+          </strong>
+        </p>
+        <% } %>
+
+        <!-- Main User Buttons -->
+        <div class="d-grid gap-2 mt-4" style="max-width: 400px; margin: 0 auto">
+          <% if (user?.isPlayer) { %>
+          <a href="/stats" class="btn btn-neon-sm">📊 Player Stats</a>
+          <a href="/matches" class="btn btn-neon-sm">📅 Match Results</a>
+          <% } else { %>
+          <a href="/vote" class="btn btn-neon-sm"
+            >⚽ Vote for Man of the Match</a
+          >
+          <a href="/stats" class="btn btn-neon-sm">📊 Player Stats</a>
+          <a href="/matches" class="btn btn-neon-sm">📅 Match Results</a>
+
+          <% if (user.isAdmin) { %>
+          <a href="/admin" class="btn btn-warning">🛠 Admin Dashboard</a>
+          <% } %> <% } %>
+        </div>
+
+        <!-- Logout Button -->
+        <hr />
+        <form action="/logout" method="POST" class="d-grid">
+          <button class="btn btn-danger">Log Out</button>
+        </form>
+
+        <% } else { %>
+        <!-- Not Logged In -->
+        <div class="d-grid gap-2 mt-4">
+          <a href="/login" class="btn btn-danger">🔐 Login</a>
+          <a href="/register" class="btn btn-success">📝 Register</a>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

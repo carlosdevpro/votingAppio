@@ -1,0 +1,81 @@
+<%- include('partials/header') %>
+
+<!-- Neon Admin Stats Edit Page -->
+<div class="page-center">
+  <div class="container">
+    <div class="card shadow p-4">
+      <h2 class="text-center mb-4">📊 Edit Player Stats</h2>
+
+      <% if (messages.success) { %>
+      <div class="alert alert-success text-center">
+        <%= messages.success[0] %>
+      </div>
+      <% } %> <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+      <% } %>
+
+      <form action="/admin/stats-edit" method="POST">
+        <% players.forEach(player => { %>
+        <div class="mb-4 border rounded p-3 bg-dark text-white">
+          <input
+            type="hidden"
+            name="stats[<%= player._id %>][id]"
+            value="<%= player._id %>"
+          />
+
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input
+              type="text"
+              class="form-control"
+              value="<%= player.firstName %> <%= player.lastName %>"
+              readonly
+            />
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="goals" class="form-label">Goals</label>
+              <input
+                type="number"
+                class="form-control"
+                name="stats[<%= player._id %>][goals]"
+                value="<%= player.goals %>"
+                required
+              />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="assists" class="form-label">Assists</label>
+              <input
+                type="number"
+                class="form-control"
+                name="stats[<%= player._id %>][assists]"
+                value="<%= player.assists %>"
+                required
+              />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="motmWins" class="form-label">MOTM Wins</label>
+              <input
+                type="number"
+                class="form-control"
+                name="stats[<%= player._id %>][motmWins]"
+                value="<%= player.motmWins %>"
+                required
+              />
+            </div>
+          </div>
+        </div>
+        <% }) %>
+
+        <div class="text-center">
+          <button type="submit" class="btn btn-neon-sm">
+            💾 Save All Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

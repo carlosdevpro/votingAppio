@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+
+<!-- Neon Player Registration Page -->
+<div class="page-center">
+  <div class="container">
+    <div class="card shadow p-4">
+      <h2 class="text-center mb-4">🎮 Player Registration</h2>
+
+      <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+      <% } %>
+
+      <form action="/register/player" method="POST">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="linkedPlayer" class="form-label">Select Player</label>
+          <select name="linkedPlayer" class="form-select" required>
+            <% players.forEach(player => { %>
+            <option value="<%= player._id %>">
+              <%= player.firstName %> <%= player.lastName %>
+            </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="shirtNumber" class="form-label">Shirt Number</label>
+          <input
+            type="number"
+            name="shirtNumber"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="text-center">
+          <button class="btn btn-neon-sm">Register as Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

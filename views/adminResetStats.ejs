@@ -1,0 +1,40 @@
+<!-- views/adminResetStats.ejs -->
+<%- include('partials/header') %>
+
+<div class="page-center">
+  <div class="container">
+    <div class="card shadow p-4" style="max-width: 500px; margin: 0 auto">
+      <h2 class="text-center mb-4">🔒 Reset Player Stats</h2>
+
+      <% if (messages.success) { %>
+      <div class="alert alert-success text-center">
+        <%= messages.success[0] %>
+      </div>
+      <% } %> <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+      <% } %>
+
+      <form action="/admin/reset-player-stats" method="POST">
+        <div class="mb-3">
+          <label for="secretCode" class="form-label">Enter Admin Secret</label>
+          <input
+            type="password"
+            name="secretCode"
+            id="secretCode"
+            class="form-control"
+            placeholder="Enter the secure code"
+            required
+          />
+        </div>
+        <div class="text-center">
+          <button class="btn btn-danger">Reset All Player Stats</button>
+        </div>
+        <div class="text-center mt-3">
+          <a href="/" class="btn btn-primary">🏠 Back to Home</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

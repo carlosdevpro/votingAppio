@@ -1,0 +1,100 @@
+<%- include('partials/header') %>
+
+<div class="container my-4">
+  <div style="text-align: center">
+    <h2>📊 Player Statistics</h2>
+  </div>
+  
+  <div class="d-flex justify-content-center mb-3">
+    <a href="/" class="btn btn-primary">🏠 Back to Home</a>
+  </div>
+
+  <div class="row justify-content-center mb-4">
+
+    <% if (topGoals.length > 0) { %>
+    <div class="col-md-4 mb-3">
+      <div class="card bg-dark text-white shadow-sm">
+        <div class="card-header text-center fw-bold">🥇 Top Goal Scorers</div>
+        <ul class="list-group list-group-flush">
+          <% topGoals.forEach((p, idx) => { %>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>⚽<%= p.firstName %> <%= p.lastName %></span>
+            <span><%= p.goals %></span>
+          </li>
+          <% }) %>
+        </ul>
+      </div>
+    </div>
+    <% } %>
+  
+    <% if (topAssists.length > 0) { %>
+    <div class="col-md-4 mb-3">
+      <div class="card bg-dark text-white shadow-sm">
+        <div class="card-header text-center fw-bold">🎯 Top Assisters</div>
+        <ul class="list-group list-group-flush">
+          <% topAssists.forEach((p, idx) => { %>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>🅰️<%= p.firstName %> <%= p.lastName %></span>
+            <span><%= p.assists %></span>
+          </li>
+          <% }) %>
+        </ul>
+      </div>
+    </div>
+    <% } %>
+  
+  </div>
+  
+  <% if (combinedMotm.length > 0) { %>
+  <div class="card mb-4">
+    <div class="card-header text-center fw-bold bg-success text-white">
+      🏆 Combined Man of the Match Leaders
+    </div>
+    <ul class="list-group list-group-flush">
+      <% combinedMotm.forEach((p, i) => { %>
+      <li class="list-group-item d-flex justify-content-between">
+        <span><%= i + 1 %>. <%= p.firstName %> <%= p.lastName %></span>
+        <span>🏅 <%= p.totalMotm %> awards</span>
+      </li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
+  
+
+    <!-- Full Stats Leaderboard -->
+    <div class="table-responsive">
+      <table
+        class="table table-dark table-striped table-bordered text-center align-middle"
+      >
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>⚽</th>
+            <th>🅰️</th>
+            <th>🟨</th>
+            <th>🟥</th>
+            <th>OM🎖️</th>
+            <th>P🏅</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% allPlayers.forEach(p => { %>
+          <tr>
+            <td><%= p.firstName %> <%= p.lastName %></td>
+            <td><%= p.goals %></td>
+            <td><%= p.assists %></td>
+            <td><%= p.yellowCards %></td>
+            <td><%= p.redCards %></td>
+            <td><%= p.motmOpposition || 0 %></td> 
+            <td><%= p.parentMotmWins || 0 %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+        
+      </table>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+</div>

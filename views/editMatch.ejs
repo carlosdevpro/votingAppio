@@ -1,0 +1,334 @@
+<%- include('partials/header') %>
+
+<div class="page-center">
+  <div class="container">
+    <div class="card shadow p-4" style="max-width: 600px; margin: 0 auto">
+      <h2 class="text-center mb-4">✏️ Edit Match Result</h2>
+
+      <% if (messages.success) { %>
+      <div class="alert alert-success text-center">
+        <%= messages.success[0] %>
+      </div>
+      <% } %> <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
+      <% } %>
+
+      <form
+        method="POST"
+        action="/admin/matches/<%= match._id %>?_method=PUT"
+        onsubmit="return handleSubmit();"
+      >
+        <div class="mb-3">
+          <label for="homeTeam" class="form-label">Home Team</label>
+          <input
+            type="text"
+            class="form-control"
+            id="homeTeam"
+            name="homeTeam"
+            value="<%= match.homeTeam %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="awayTeam" class="form-label">Away Team</label>
+          <input
+            type="text"
+            class="form-control"
+            id="awayTeam"
+            name="awayTeam"
+            value="<%= match.awayTeam %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3 d-flex gap-2">
+          <div class="w-50">
+            <label for="homeScore" class="form-label">Home Score</label>
+            <input
+              type="number"
+              class="form-control"
+              id="homeScore"
+              name="homeScore"
+              value="<%= match.homeScore %>"
+              required
+            />
+          </div>
+          <div class="w-50">
+            <label for="awayScore" class="form-label">Away Score</label>
+            <input
+              type="number"
+              class="form-control"
+              id="awayScore"
+              name="awayScore"
+              value="<%= match.awayScore %>"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Scorers -->
+        <div class="mb-3">
+          <label class="form-label">Edit Scorers</label>
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <select id="scorerName" class="form-select w-100">
+              <% players.forEach(player => { %>
+              <option value="<%= player.firstName %> <%= player.lastName %>">
+                <%= player.firstName %> <%= player.lastName %>
+              </option>
+              <% }) %>
+            </select>
+
+            <input
+              type="number"
+              id="goalCount"
+              min="1"
+              value="1"
+              class="form-control"
+              style="max-width: 80px"
+            />
+
+            <select id="assistName" class="form-select w-100">
+              <option value="">No Assist</option>
+              <% players.forEach(player => { %>
+              <option value="<%= player.firstName %> <%= player.lastName %>">
+                <%= player.firstName %> <%= player.lastName %>
+              </option>
+              <% }) %>
+            </select>
+            <div class="mb-2 text-center">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm me-2"
+                onclick="setCurrentHalf('first')"
+                id="firstHalfBtn"
+              >
+                First Half
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                onclick="setCurrentHalf('second')"
+                id="secondHalfBtn"
+              >
+                Second Half
+              </button>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-success w-100"
+              onclick="addScorer()"
+            >
+              ➕ Add Scorer
+            </button>
+          </div>
+
+          <ul class="list-group mb-2" id="scorerList"></ul>
+          <input type="hidden" name="scorers" id="scorersInput" />
+        </div>
+
+        <!-- Yellow Cards -->
+        <div class="mb-3">
+          <label class="form-label">🟨 Yellow Cards</label>
+          <div class="d-flex gap-2 mb-2">
+            <select id="yellowCardPlayer" class="form-select">
+              <option value="">Select Player</option>
+              <% players.forEach(player => { %>
+              <option value="<%= player.firstName %> <%= player.lastName %>">
+                <%= player.firstName %> <%= player.lastName %>
+              </option>
+              <% }) %>
+            </select>
+            <button
+              type="button"
+              class="btn btn-warning"
+              onclick="addYellowCard()"
+            >
+              Add
+            </button>
+          </div>
+          <ul class="list-group mb-2" id="yellowCardList"></ul>
+          <input type="hidden" name="yellowCards" id="yellowCardsInput" />
+        </div>
+
+        <!-- Red Cards -->
+        <div class="mb-3">
+          <label class="form-label">🟥 Red Cards</label>
+          <div class="d-flex gap-2 mb-2">
+            <select id="redCardPlayer" class="form-select">
+              <option value="">Select Player</option>
+              <% players.forEach(player => { %>
+              <option value="<%= player.firstName %> <%= player.lastName %>">
+                <%= player.firstName %> <%= player.lastName %>
+              </option>
+              <% }) %>
+            </select>
+            <button type="button" class="btn btn-danger" onclick="addRedCard()">
+              Add
+            </button>
+          </div>
+          <ul class="list-group mb-2" id="redCardList"></ul>
+          <input type="hidden" name="redCards" id="redCardsInput" />
+        </div>
+
+        <input
+          type="hidden"
+          name="firstHalfScorers"
+          id="firstHalfScorersInput"
+        />
+        <input
+          type="hidden"
+          name="secondHalfScorers"
+          id="secondHalfScorersInput"
+        />
+        <input type="hidden" name="yellowCards" id="yellowCardsInput" />
+        <input type="hidden" name="redCards" id="redCardsInput" />
+        <ul id="yellowCardList" class="list-group mb-3"></ul>
+        <ul id="redCardList" class="list-group mb-3"></ul>
+
+        <div class="text-center">
+          <button class="btn btn-warning">💾 Update Match</button>
+          <a href="/matches" class="btn btn-info">📅 Back</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ELEMENTS
+  const scorerList = document.getElementById('scorerList');
+  const scorersInput = document.getElementById('scorersInput');
+  const yellowCardsInput = document.getElementById('yellowCardsInput');
+  const redCardsInput = document.getElementById('redCardsInput');
+  const yellowCardList = document.getElementById('yellowCardList');
+  const redCardList = document.getElementById('redCardList');
+
+  // DATA
+  let firstHalfScorers = <%- JSON.stringify(match.firstHalfScorers || []).replace(/</g, '\\u003c') %>;
+  let secondHalfScorers = <%- JSON.stringify(match.secondHalfScorers || []).replace(/</g, '\\u003c') %>;
+  let yellowCards = <%- JSON.stringify(match.yellowCards || []) %>;
+  let redCards = <%- JSON.stringify(match.redCards || []) %>;
+  let currentHalf = 'first';
+
+  // ✅ HALVES
+  function setCurrentHalf(half) {
+    currentHalf = half;
+    document.getElementById('firstHalfBtn').classList.toggle('btn-primary', half === 'first');
+    document.getElementById('firstHalfBtn').classList.toggle('btn-outline-primary', half !== 'first');
+    document.getElementById('secondHalfBtn').classList.toggle('btn-primary', half === 'second');
+    document.getElementById('secondHalfBtn').classList.toggle('btn-outline-secondary', half !== 'second');
+    renderScorers();
+  }
+
+  // ✅ SCORERS
+  function renderScorers() {
+    scorerList.innerHTML = '';
+    const combined = [
+      ...firstHalfScorers.map(s => ({ ...s, half: 'First Half' })),
+      ...secondHalfScorers.map(s => ({ ...s, half: 'Second Half' })),
+    ];
+
+    combined.forEach((scorer, index) => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `
+        ${scorer.half}: ${scorer.name} - ${scorer.goals || 1} goal${scorer.goals > 1 ? 's' : ''}
+        ${scorer.assist ? '(Assisted by ' + scorer.assist + ')' : ''}
+        <button class="btn btn-sm btn-danger" onclick="removeScorer(${index})">❌</button>
+      `;
+      scorerList.appendChild(li);
+    });
+
+    scorersInput.value = JSON.stringify({
+      firstHalfScorers,
+      secondHalfScorers
+    });
+  }
+
+  function addScorer() {
+    const name = document.getElementById('scorerName').value;
+    const goals = parseInt(document.getElementById('goalCount').value);
+    const assist = document.getElementById('assistName').value;
+    if (!name || isNaN(goals) || goals < 1) return;
+
+    const newScorer = { name, goals, assist };
+    if (currentHalf === 'first') {
+      firstHalfScorers.push(newScorer);
+    } else {
+      secondHalfScorers.push(newScorer);
+    }
+    renderScorers();
+  }
+
+  function removeScorer(index) {
+    if (index < firstHalfScorers.length) {
+      firstHalfScorers.splice(index, 1);
+    } else {
+      secondHalfScorers.splice(index - firstHalfScorers.length, 1);
+    }
+    renderScorers();
+  }
+
+  // ✅ CARDS
+  function renderCards(type) {
+    const list = type === 'yellow' ? yellowCardList : redCardList;
+    const cards = type === 'yellow' ? yellowCards : redCards;
+    const input = type === 'yellow' ? yellowCardsInput : redCardsInput;
+
+    list.innerHTML = '';
+    cards.forEach((card, index) => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `
+        ${card.name}
+        <button class="btn btn-sm btn-outline-danger" onclick="removeCard('${type}', ${index})">❌</button>
+      `;
+      list.appendChild(li);
+    });
+
+    input.value = JSON.stringify(cards);
+  }
+
+  function addYellowCard() {
+    const name = document.getElementById('yellowCardPlayer').value;
+    if (!name) return;
+    yellowCards.push({ name });
+    renderCards('yellow');
+  }
+
+  function addRedCard() {
+    const name = document.getElementById('redCardPlayer').value;
+    if (!name) return;
+    redCards.push({ name });
+    renderCards('red');
+  }
+
+  function removeCard(type, index) {
+    if (type === 'yellow') {
+      yellowCards.splice(index, 1);
+      renderCards('yellow');
+    } else {
+      redCards.splice(index, 1);
+      renderCards('red');
+    }
+  }
+
+  // ✅ FINAL SUBMIT
+  function handleSubmit() {
+    document.getElementById('firstHalfScorersInput').value = JSON.stringify(firstHalfScorers);
+    document.getElementById('secondHalfScorersInput').value = JSON.stringify(secondHalfScorers);
+    document.getElementById('yellowCardsInput').value = JSON.stringify(yellowCards);
+    document.getElementById('redCardsInput').value = JSON.stringify(redCards);
+    return true;
+  }
+
+  // INITIAL RENDER
+  renderScorers();
+  renderCards('yellow');
+  renderCards('red');
+  setCurrentHalf('first');
+</script>
+
+<%- include('partials/footer') %>

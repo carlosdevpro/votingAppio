@@ -1,0 +1,83 @@
+<%- include('partials/header') %>
+
+<!-- Neon Vote Page -->
+<div class="page-center">
+  <div class="container">
+    <div class="text-center">
+      <h1 class="page-title">🗳 Vote for Player of the Match</h1>
+    </div>
+
+    <!-- Flash messages -->
+    <% if (messages.success && messages.success.length) { %>
+    <div
+      class="alert alert-success alert-dismissible fade show text-center"
+      role="alert"
+    >
+      <%= messages.success[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } else if (messages.error && messages.error.length) { %>
+    <div
+      class="alert alert-danger alert-dismissible fade show text-center"
+      role="alert"
+    >
+      <%= messages.error[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <!-- ✅ Delayed vote info alert -->
+    <% if (user.hasVoted) { %>
+    <div id="already-voted" class="alert alert-info text-center d-none">
+      ✅ You have already voted!
+    </div>
+    <% } %>
+
+    <!-- Vote form -->
+    <% if (!user.hasVoted) { %>
+    <form method="POST" action="/vote">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <% players.forEach((player, index) => { %>
+        <div class="col">
+          <div
+            class="card shadow-sm h-100 text-center p-3 <%= index % 2 === 0 ? 'card-alt-a' : 'card-alt-b' %>"
+          >
+            <h5 class="card-title neon">
+              <%= player.firstName %> <%= player.lastName %>
+            </h5>
+            <p>Shirt #<%= player.shirtNumber %></p>
+            <button
+              type="submit"
+              name="playerId"
+              value="<%= player._id %>"
+              class="btn btn-neon-sm w-100"
+            >
+              Vote 🗳️
+            </button>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+    </form>
+    <% } %>
+
+    <!-- Back button -->
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-neon-sm btn-block">🏠 Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Delayed reveal script placed safely below -->
+<script>
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      const infoBox = document.getElementById('already-voted');
+      if (infoBox) {
+        infoBox.classList.remove('d-none');
+      }
+    }, 2000); // 2 seconds
+  });
+</script>
+
+<%- include('partials/footer') %>

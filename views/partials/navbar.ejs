@@ -1,0 +1,39 @@
+<nav class="navbar glassy-navbar fixed-top">
+  <div class="container-fluid justify-content-center position-relative">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <span class="me-2">⚽</span>
+      <span id="teamName" class="brand-typewriter">Wombwell Town U12s</span>
+    </a>
+  </div>
+</nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const secretEl = document.getElementById('secretTrigger');
+    let pressTimer;
+
+    if (!secretEl) {
+      console.log('❌ Secret trigger not found');
+      return;
+    }
+
+    // Desktop
+    secretEl.addEventListener('mousedown', () => {
+      pressTimer = setTimeout(() => {
+        window.location.href = '/admin/secret-tools';
+      }, 5000);
+    });
+
+    secretEl.addEventListener('mouseup', () => clearTimeout(pressTimer));
+    secretEl.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+
+    // Mobile
+    secretEl.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => {
+        window.location.href = '/admin/secret-tools';
+      }, 5000);
+    });
+
+    secretEl.addEventListener('touchend', () => clearTimeout(pressTimer));
+  });
+</script>
