@@ -829,184 +829,184 @@ app.delete(
   }
 );
 
-// ✅ GET route to render edit form
-app.get(
-  '/admin/matches/:id/edit',
-  requireLogin,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const match = await Match.findById(req.params.id);
-      const players = await Player.find({}); // ✅ Fetch players for dropdown
+// // ✅ GET route to render edit form
+// app.get(
+//   '/admin/matches/:id/edit',
+//   requireLogin,
+//   requireAdmin,
+//   async (req, res) => {
+//     try {
+//       const match = await Match.findById(req.params.id);
+//       const players = await Player.find({}); // ✅ Fetch players for dropdown
 
-      if (!match) throw new Error('Match not found');
+//       if (!match) throw new Error('Match not found');
 
-      res.render('editMatch', {
-        match,
-        players, // ✅ Pass players to the EJS view
-        messages: req.flash(),
-      });
-    } catch (err) {
-      console.error('❌ Failed to load match edit page:', err);
-      req.flash('error', 'Could not load match for editing.');
-      res.redirect('/matches');
-    }
-  }
-);
+//       res.render('editMatch', {
+//         match,
+//         players, // ✅ Pass players to the EJS view
+//         messages: req.flash(),
+//       });
+//     } catch (err) {
+//       console.error('❌ Failed to load match edit page:', err);
+//       req.flash('error', 'Could not load match for editing.');
+//       res.redirect('/matches');
+//     }
+//   }
+// );
 
 // ✅ PUT route to update a match
 // ✅ PUT route with automatic stat updates
-app.put('/admin/matches/:id', requireLogin, requireAdmin, async (req, res) => {
-  try {
-    const {
-      homeTeam,
-      awayTeam,
-      homeScore,
-      awayScore,
-      firstHalfScorers,
-      secondHalfScorers,
-      yellowCards,
-      redCards,
-      motmOpposition,
-      parentsMotm,
-    } = req.body;
+// app.put('/admin/matches/:id', requireLogin, requireAdmin, async (req, res) => {
+//   try {
+//     const {
+//       homeTeam,
+//       awayTeam,
+//       homeScore,
+//       awayScore,
+//       firstHalfScorers,
+//       secondHalfScorers,
+//       yellowCards,
+//       redCards,
+//       motmOpposition,
+//       parentsMotm,
+//     } = req.body;
 
-    // Parse JSON safely
-    const parsedFirstHalf = firstHalfScorers
-      ? JSON.parse(firstHalfScorers)
-      : [];
-    const parsedSecondHalf = secondHalfScorers
-      ? JSON.parse(secondHalfScorers)
-      : [];
-    const parsedYellows = yellowCards ? JSON.parse(yellowCards) : [];
-    const parsedReds = redCards ? JSON.parse(redCards) : [];
+//     // Parse JSON safely
+//     const parsedFirstHalf = firstHalfScorers
+//       ? JSON.parse(firstHalfScorers)
+//       : [];
+//     const parsedSecondHalf = secondHalfScorers
+//       ? JSON.parse(secondHalfScorers)
+//       : [];
+//     const parsedYellows = yellowCards ? JSON.parse(yellowCards) : [];
+//     const parsedReds = redCards ? JSON.parse(redCards) : [];
 
-    // 🧹 Revert stats by finding the original match first
-    const existingMatch = await Match.findById(req.params.id);
+//     // 🧹 Revert stats by finding the original match first
+//     const existingMatch = await Match.findById(req.params.id);
 
-    if (existingMatch) {
-      const allOldScorers = [
-        ...(existingMatch.firstHalfScorers || []),
-        ...(existingMatch.secondHalfScorers || []),
-      ];
+//     if (existingMatch) {
+//       const allOldScorers = [
+//         ...(existingMatch.firstHalfScorers || []),
+//         ...(existingMatch.secondHalfScorers || []),
+//       ];
 
-      for (const s of allOldScorers) {
-        const player = await Player.findOne({ fullName: s.name });
-        if (player) {
-          player.goals -= s.goals || 1;
-          if (s.assist) player.assists -= 1;
-          await player.save();
-        }
-      }
+//       for (const s of allOldScorers) {
+//         const player = await Player.findOne({ fullName: s.name });
+//         if (player) {
+//           player.goals -= s.goals || 1;
+//           if (s.assist) player.assists -= 1;
+//           await player.save();
+//         }
+//       }
 
-      for (const y of existingMatch.yellowCards || []) {
-        const player = await Player.findOne({ fullName: y.name });
-        if (player) {
-          player.yellowCards -= 1;
-          await player.save();
-        }
-      }
+//       for (const y of existingMatch.yellowCards || []) {
+//         const player = await Player.findOne({ fullName: y.name });
+//         if (player) {
+//           player.yellowCards -= 1;
+//           await player.save();
+//         }
+//       }
 
-      for (const r of existingMatch.redCards || []) {
-        const player = await Player.findOne({ fullName: r.name });
-        if (player) {
-          player.redCards -= 1;
-          await player.save();
-        }
-      }
+//       for (const r of existingMatch.redCards || []) {
+//         const player = await Player.findOne({ fullName: r.name });
+//         if (player) {
+//           player.redCards -= 1;
+//           await player.save();
+//         }
+//       }
 
-      if (existingMatch.motmOpposition) {
-        const player = await Player.findOne({
-          fullName: existingMatch.motmOpposition,
-        });
-        if (player) {
-          player.motmOpposition -= 1;
-          await player.save();
-        }
-      }
+//       if (existingMatch.motmOpposition) {
+//         const player = await Player.findOne({
+//           fullName: existingMatch.motmOpposition,
+//         });
+//         if (player) {
+//           player.motmOpposition -= 1;
+//           await player.save();
+//         }
+//       }
 
-      if (existingMatch.parentsMotm) {
-        const player = await Player.findOne({
-          fullName: existingMatch.parentsMotm,
-        });
-        if (player) {
-          player.motmParents -= 1;
-          await player.save();
-        }
-      }
-    }
+//       if (existingMatch.parentsMotm) {
+//         const player = await Player.findOne({
+//           fullName: existingMatch.parentsMotm,
+//         });
+//         if (player) {
+//           player.motmParents -= 1;
+//           await player.save();
+//         }
+//       }
+//     }
 
-    // 🧮 Update stats from new input
-    const allNewScorers = [...parsedFirstHalf, ...parsedSecondHalf];
-    for (const s of allNewScorers) {
-      const player = await Player.findOne({ fullName: s.name });
-      if (player) {
-        player.goals += s.goals || 1;
-        if (s.assist) {
-          const assister = await Player.findOne({ fullName: s.assist });
-          if (assister) {
-            assister.assists += 1;
-            await assister.save();
-          }
-        }
-        await player.save();
-      }
-    }
+//     // 🧮 Update stats from new input
+//     const allNewScorers = [...parsedFirstHalf, ...parsedSecondHalf];
+//     for (const s of allNewScorers) {
+//       const player = await Player.findOne({ fullName: s.name });
+//       if (player) {
+//         player.goals += s.goals || 1;
+//         if (s.assist) {
+//           const assister = await Player.findOne({ fullName: s.assist });
+//           if (assister) {
+//             assister.assists += 1;
+//             await assister.save();
+//           }
+//         }
+//         await player.save();
+//       }
+//     }
 
-    for (const y of parsedYellows) {
-      const player = await Player.findOne({ fullName: y.name });
-      if (player) {
-        player.yellowCards += 1;
-        await player.save();
-      }
-    }
+//     for (const y of parsedYellows) {
+//       const player = await Player.findOne({ fullName: y.name });
+//       if (player) {
+//         player.yellowCards += 1;
+//         await player.save();
+//       }
+//     }
 
-    for (const r of parsedReds) {
-      const player = await Player.findOne({ fullName: r.name });
-      if (player) {
-        player.redCards += 1;
-        await player.save();
-      }
-    }
+//     for (const r of parsedReds) {
+//       const player = await Player.findOne({ fullName: r.name });
+//       if (player) {
+//         player.redCards += 1;
+//         await player.save();
+//       }
+//     }
 
-    if (motmOpposition) {
-      const player = await Player.findOne({ fullName: motmOpposition });
-      if (player) {
-        player.motmOpposition += 1;
-        await player.save();
-      }
-    }
+//     if (motmOpposition) {
+//       const player = await Player.findOne({ fullName: motmOpposition });
+//       if (player) {
+//         player.motmOpposition += 1;
+//         await player.save();
+//       }
+//     }
 
-    if (parentsMotm) {
-      const player = await Player.findOne({ fullName: parentsMotm });
-      if (player) {
-        player.motmParents += 1;
-        await player.save();
-      }
-    }
+//     if (parentsMotm) {
+//       const player = await Player.findOne({ fullName: parentsMotm });
+//       if (player) {
+//         player.motmParents += 1;
+//         await player.save();
+//       }
+//     }
 
-    // ✅ Save updated match
-    await Match.findByIdAndUpdate(req.params.id, {
-      homeTeam,
-      awayTeam,
-      homeScore: parseInt(homeScore),
-      awayScore: parseInt(awayScore),
-      firstHalfScorers: parsedFirstHalf,
-      secondHalfScorers: parsedSecondHalf,
-      yellowCards: parsedYellows,
-      redCards: parsedReds,
-      motmOpposition,
-      parentsMotm,
-    });
+//     // ✅ Save updated match
+//     await Match.findByIdAndUpdate(req.params.id, {
+//       homeTeam,
+//       awayTeam,
+//       homeScore: parseInt(homeScore),
+//       awayScore: parseInt(awayScore),
+//       firstHalfScorers: parsedFirstHalf,
+//       secondHalfScorers: parsedSecondHalf,
+//       yellowCards: parsedYellows,
+//       redCards: parsedReds,
+//       motmOpposition,
+//       parentsMotm,
+//     });
 
-    req.flash('success', '✅ Match updated successfully and stats adjusted.');
-    res.redirect('/matches');
-  } catch (err) {
-    console.error('❌ Failed to update match:', err);
-    req.flash('error', 'Something went wrong updating the match.');
-    res.redirect('/matches');
-  }
-});
+//     req.flash('success', '✅ Match updated successfully and stats adjusted.');
+//     res.redirect('/matches');
+//   } catch (err) {
+//     console.error('❌ Failed to update match:', err);
+//     req.flash('error', 'Something went wrong updating the match.');
+//     res.redirect('/matches');
+//   }
+// });
 
 // ✅ DELETE player and linked parents
 app.delete(
