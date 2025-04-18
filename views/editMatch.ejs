@@ -125,7 +125,6 @@
           </div>
 
           <ul class="list-group mb-2" id="scorerList"></ul>
-          <input type="hidden" name="scorers" id="scorersInput" />
         </div>
 
         <!-- Yellow Cards -->
@@ -184,8 +183,6 @@
         />
         <input type="hidden" name="yellowCards" id="yellowCardsInput" />
         <input type="hidden" name="redCards" id="redCardsInput" />
-        <ul id="yellowCardList" class="list-group mb-3"></ul>
-        <ul id="redCardList" class="list-group mb-3"></ul>
 
         <div class="text-center">
           <button class="btn btn-warning">💾 Update Match</button>
@@ -241,10 +238,7 @@
       scorerList.appendChild(li);
     });
 
-    scorersInput.value = JSON.stringify({
-      firstHalfScorers,
-      secondHalfScorers
-    });
+
   }
 
   function addScorer() {

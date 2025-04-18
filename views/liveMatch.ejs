@@ -37,7 +37,7 @@
           </div>
         </div>
 
-        <!-- Match Type Selection (Stacked) -->
+        <!-- Match Type -->
         <div class="mb-3 d-flex flex-column align-items-center gap-2">
           <button
             type="button"
@@ -65,25 +65,25 @@
           </button>
         </div>
 
-        <!-- Assign Wombwell Town (New Clean Version) -->
-        <div id="assignWombwellSection" class="mb-4 text-center">
+        <!-- Assign Team -->
+        <div id="assignTeamSection" class="mb-4 text-center">
           <button
             type="button"
             class="btn btn-outline-primary me-2"
-            onclick="assignWombwell('home')"
+            onclick="assignTeam('home')"
           >
             🏠 Home
           </button>
           <button
             type="button"
             class="btn btn-outline-primary"
-            onclick="assignWombwell('away')"
+            onclick="assignTeam('away')"
           >
             🚌 Away
           </button>
         </div>
 
-        <!-- Home and Away Team Inputs with Centered Labels -->
+        <!-- Team Inputs -->
         <div
           id="teamInputsWrapper"
           class="mb-4 d-flex justify-content-between gap-3 text-center"
@@ -92,15 +92,14 @@
             <label
               for="homeTeam"
               class="form-label text-white d-block text-center"
+              >🏠 Home Team</label
             >
-              🏠 Home Team
-            </label>
             <input
               type="text"
               class="form-control text-center"
               id="homeTeam"
               name="homeTeam"
-              placeholder="e.g. Wombwell Town"
+              placeholder="e.g. My Team"
               required
             />
           </div>
@@ -108,15 +107,14 @@
             <label
               for="awayTeam"
               class="form-label text-white d-block text-center"
+              >🚌 Away Team</label
             >
-              🚌 Away Team
-            </label>
             <input
               type="text"
               class="form-control text-center"
               id="awayTeam"
               name="awayTeam"
-              placeholder="e.g. Man Utd"
+              placeholder="e.g. Opponent"
               required
             />
           </div>
@@ -134,6 +132,7 @@
           </button>
         </div>
 
+        <!-- Scorers -->
         <div class="d-flex gap-2 mb-3">
           <select id="scorerName" class="form-select">
             <option value="">Scorer</option>
@@ -157,6 +156,7 @@
             Add Goal
           </button>
         </div>
+
         <div class="text-center mb-3">
           <button
             type="button"
@@ -169,7 +169,7 @@
 
         <ul id="scorerList" class="list-group mb-4"></ul>
 
-        <!-- Yellow/Red Cards -->
+        <!-- Cards -->
         <h5>🟨 Yellow Card</h5>
         <div class="d-flex gap-2 mb-3">
           <select id="yellowCardPlayer" class="form-select">
@@ -206,11 +206,9 @@
         </div>
         <ul id="redCardList" class="list-group mb-4"></ul>
 
-        <!-- Hidden Score Inputs (required for backend save) -->
+        <!-- Hidden Inputs -->
         <input type="hidden" id="homeScore" name="homeScore" value="0" />
         <input type="hidden" id="awayScore" name="awayScore" value="0" />
-
-        <!-- Hidden Inputs -->
         <input
           type="hidden"
           name="firstHalfScorers"
@@ -247,44 +245,47 @@
   </div>
 </div>
 
-<!-- <script src="/js/liveMatch.js"></script> -->
-<script>
-  function setWombwellTeam(position) {
-    if (position === 'home') {
-      document.getElementById('homeTeam').value = 'Wombwell Town';
-      document.getElementById('homeTeam').readOnly = true;
-      document.getElementById('awayTeam').value = '';
-      document.getElementById('awayTeam').readOnly = false;
-    } else {
-      document.getElementById('awayTeam').value = 'Wombwell Town';
-      document.getElementById('awayTeam').readOnly = true;
-      document.getElementById('homeTeam').value = '';
-      document.getElementById('homeTeam').readOnly = false;
-    }
-  }
-</script>
 <script>
   const firstHalfScorers = [];
   const secondHalfScorers = [];
   const yellowCards = [];
   const redCards = [];
   let isSecondHalf = false;
+  let inputsHidden = false;
+
+  function assignTeam(position) {
+    const assignSection = document.getElementById('assignTeamSection');
+    const homeInput = document.getElementById('homeTeam');
+    const awayInput = document.getElementById('awayTeam');
+
+    if (position === 'home') {
+      homeInput.value = 'My Team';
+      homeInput.readOnly = true;
+      awayInput.value = '';
+      awayInput.readOnly = false;
+    } else {
+      awayInput.value = 'My Team';
+      awayInput.readOnly = true;
+      homeInput.value = '';
+      homeInput.readOnly = false;
+    }
+
+    assignSection.style.display = 'none';
+    updateLiveScoreboard();
+    checkAndHideInputs();
+  }
 
   function renderScorers() {
     const list = document.getElementById('scorerList');
     list.innerHTML = '';
-
-    const scorersToRender = isSecondHalf ? secondHalfScorers : firstHalfScorers;
-    scorersToRender.forEach((scorer, index) => {
+    const scorers = isSecondHalf ? secondHalfScorers : firstHalfScorers;
+    scorers.forEach((s, i) => {
       const li = document.createElement('li');
       li.className =
         'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `
-            ${scorer.name} ${
-        scorer.assist ? '(Assisted by ' + scorer.assist + ')' : ''
-      }
-            <button class="btn btn-sm btn-danger" onclick="removeScorer(${index})">❌</button>
-          `;
+      li.innerHTML = `${s.name} ${
+        s.assist ? '(Assisted by ' + s.assist + ')' : ''
+      } <button class="btn btn-sm btn-danger" onclick="removeScorer(${i})">❌</button>`;
       list.appendChild(li);
     });
 
@@ -297,20 +298,17 @@
   function addScorer() {
     const name = document.getElementById('scorerName').value;
     const assist = document.getElementById('assistName').value;
-
     if (!name) return;
-
     const scorer = { name };
     if (assist) scorer.assist = assist;
 
-    // ✅ Force the goal to be assigned to Wombwell Town (home or away)
-    const homeTeam = document.getElementById('homeTeam').value;
-    const awayTeam = document.getElementById('awayTeam').value;
+    const home = document.getElementById('homeTeam').value;
+    const away = document.getElementById('awayTeam').value;
 
-    if (homeTeam === 'Wombwell Town') {
+    if (home === 'My Team') {
       document.getElementById('homeScore').value =
         parseInt(document.getElementById('homeScore').value || '0') + 1;
-    } else if (awayTeam === 'Wombwell Town') {
+    } else if (away === 'My Team') {
       document.getElementById('awayScore').value =
         parseInt(document.getElementById('awayScore').value || '0') + 1;
     }
@@ -322,56 +320,37 @@
     }
 
     renderScorers();
-    updateLiveScoreboard(); // 👈 Update the live display at the top
-    // Reset scorer and assist dropdowns to default
+    updateLiveScoreboard();
     document.getElementById('scorerName').value = '';
     document.getElementById('assistName').value = '';
   }
 
-  //   Add opposition goal
-  function addOppositionGoal() {
-    const homeTeam = document.getElementById('homeTeam').value;
-    const awayTeam = document.getElementById('awayTeam').value;
+  function removeScorer(index) {
+    const target = isSecondHalf ? secondHalfScorers : firstHalfScorers;
+    target.splice(index, 1);
+    renderScorers();
+  }
 
-    if (homeTeam !== 'Wombwell Town') {
+  function addOppositionGoal() {
+    const home = document.getElementById('homeTeam').value;
+    const away = document.getElementById('awayTeam').value;
+
+    if (home !== 'My Team') {
       document.getElementById('homeScore').value =
         parseInt(document.getElementById('homeScore').value || '0') + 1;
-    } else if (awayTeam !== 'Wombwell Town') {
+    } else if (away !== 'My Team') {
       document.getElementById('awayScore').value =
         parseInt(document.getElementById('awayScore').value || '0') + 1;
     }
 
-    updateLiveScoreboard(); // 👈 keep it visually updated
-  }
-
-  //   Filter assist
-  function filterAssistOptions() {
-    const scorerName = document.getElementById('scorerName').value;
-    const assistDropdown = document.getElementById('assistName');
-
-    const options = assistDropdown.querySelectorAll('option');
-
-    options.forEach((option) => {
-      if (option.value === scorerName) {
-        option.style.display = 'none'; // Hide if same as scorer
-      } else {
-        option.style.display = ''; // Show others
-      }
-    });
-  }
-
-  function toggleHalf() {
-    isSecondHalf = !isSecondHalf;
-    const indicator = document.getElementById('halfIndicator');
-    indicator.textContent = isSecondHalf ? 'Second Half' : 'First Half';
-    renderScorers();
+    updateLiveScoreboard();
   }
 
   function addYellowCard() {
     const name = document.getElementById('yellowCardPlayer').value;
     if (!name) return;
     yellowCards.push({ name });
-    renderCards('yellowCardList', yellowCards, 'yellowCardsInput');
+    renderCardList('yellowCardList', yellowCards, 'yellowCardsInput');
     document.getElementById('yellowCardPlayer').value = '';
   }
 
@@ -379,110 +358,80 @@
     const name = document.getElementById('redCardPlayer').value;
     if (!name) return;
     redCards.push({ name });
-    renderCards('redCardList', redCards, 'redCardsInput');
+    renderCardList('redCardList', redCards, 'redCardsInput');
     document.getElementById('redCardPlayer').value = '';
   }
 
-  function renderCards(listId, array, hiddenInputId) {
-    const list = document.getElementById(listId);
-    list.innerHTML = '';
-    array.forEach((card, index) => {
+  function renderCardList(listId, data, inputId) {
+    const ul = document.getElementById(listId);
+    ul.innerHTML = '';
+    data.forEach((card, i) => {
       const li = document.createElement('li');
       li.className =
         'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `
-            ${card.name}
-            <button class="btn btn-sm btn-outline-danger" onclick="removeCard('${listId}', ${index})">❌</button>
-          `;
-      list.appendChild(li);
+      li.innerHTML = `${card.name} <button class="btn btn-sm btn-outline-danger" onclick="removeCard('${listId}', ${i})">❌</button>`;
+      ul.appendChild(li);
     });
-
-    document.getElementById(hiddenInputId).value = JSON.stringify(array);
+    document.getElementById(inputId).value = JSON.stringify(data);
   }
 
   function removeCard(listId, index) {
     if (listId === 'yellowCardList') {
       yellowCards.splice(index, 1);
-      renderCards('yellowCardList', yellowCards, 'yellowCardsInput');
-    } else if (listId === 'redCardList') {
+      renderCardList('yellowCardList', yellowCards, 'yellowCardsInput');
+    } else {
       redCards.splice(index, 1);
-      renderCards('redCardList', redCards, 'redCardsInput');
+      renderCardList('redCardList', redCards, 'redCardsInput');
     }
   }
 
-  // ✅ Updated: No more input vanishing too early
+  function toggleHalf() {
+    isSecondHalf = !isSecondHalf;
+    document.getElementById('halfIndicator').textContent = isSecondHalf
+      ? 'Second Half'
+      : 'First Half';
+    renderScorers();
+  }
+
+  function updateLiveScoreboard() {
+    const home = document.getElementById('homeTeam').value || 'Home';
+    const away = document.getElementById('awayTeam').value || 'Away';
+    const homeScore = document.getElementById('homeScore').value || '0';
+    const awayScore = document.getElementById('awayScore').value || '0';
+
+    document.getElementById('displayHomeTeam').textContent = home;
+    document.getElementById('displayAwayTeam').textContent = away;
+    document.getElementById(
+      'liveScore'
+    ).textContent = `${homeScore} - ${awayScore}`;
+  }
+
   function checkAndHideInputs() {
-    const homeInput = document.getElementById('homeTeam');
-    const awayInput = document.getElementById('awayTeam');
+    const home = document.getElementById('homeTeam').value.trim();
+    const away = document.getElementById('awayTeam').value.trim();
     const wrapper = document.getElementById('teamInputsWrapper');
 
-    const homeVal = homeInput.value.trim();
-    const awayVal = awayInput.value.trim();
+    if (inputsHidden) return; // ✅ Prevent double-hide
 
-    console.log('🏠 Home:', homeVal);
-    console.log('🚌 Away:', awayVal);
-
-    if (homeVal) {
-      document.getElementById('displayHomeTeam').textContent = homeVal;
+    if (home && away) {
+      wrapper.style.setProperty('display', 'none', 'important');
+      inputsHidden = true;
+      console.log('✅ Inputs filled and hidden.');
     }
-    if (awayVal) {
-      document.getElementById('displayAwayTeam').textContent = awayVal;
-    }
-    if (homeVal && awayVal) {
-      setTimeout(() => {
-        wrapper.style.setProperty('display', 'none', 'important');
-      }, 1000); // Optional delay
-    }
-
-    // 👇 Remove this part that was hiding inputs too early
-    // wrapper.style.setProperty('display', 'none', 'important');
   }
 
-  function assignWombwell(position) {
-    const assignSection = document.getElementById('assignWombwellSection');
-    const homeInput = document.getElementById('homeTeam');
-    const awayInput = document.getElementById('awayTeam');
-
-    if (position === 'home') {
-      homeInput.value = 'Wombwell Town';
-      homeInput.readOnly = true;
-      awayInput.value = '';
-      awayInput.readOnly = false;
-    } else {
-      awayInput.value = 'Wombwell Town';
-      awayInput.readOnly = true;
-      homeInput.value = '';
-      homeInput.readOnly = false;
-    }
-
-    assignSection.style.display = 'none';
-
-    // ✅ Add this line to manually run the hiding logic
-    checkAndHideInputs();
-  }
-
-  renderScorers(); // 👈 Call this initially on page load
-</script>
-
-<!-- Select match type function -->
-<script>
   function selectMatchType(type) {
-    const matchTypeInput = document.getElementById('matchType');
-    matchTypeInput.value = type;
-
-    const buttons = document.querySelectorAll('.match-type-btn');
-    buttons.forEach((btn) => {
-      if (btn.dataset.type !== type) {
-        btn.style.display = 'none';
+    document.getElementById('matchType').value = type;
+    document.querySelectorAll('.match-type-btn').forEach((btn) => {
+      if (btn.dataset.type === type) {
+        btn.classList.add('btn-dark');
+        btn.disabled = true;
       } else {
-        btn.classList.add('btn-dark'); // highlight selected one
-        btn.disabled = true; // optional: disable the selected one
+        btn.style.display = 'none';
       }
     });
   }
-</script>
 
-<script>
   function prepareFormData() {
     document.getElementById('firstHalfScorersInput').value =
       JSON.stringify(firstHalfScorers);
@@ -492,76 +441,29 @@
       JSON.stringify(yellowCards);
     document.getElementById('redCardsInput').value = JSON.stringify(redCards);
   }
-</script>
 
-<script>
-  function updateLiveScoreboard() {
-    const homeScore = document.getElementById('homeScore').value || '0';
-    const awayScore = document.getElementById('awayScore').value || '0';
-    document.getElementById(
-      'liveScore'
-    ).textContent = `${homeScore} - ${awayScore}`;
-
-    const homeTeam = document.getElementById('homeTeam').value || 'Home';
-    const awayTeam = document.getElementById('awayTeam').value || 'Away';
-    document.getElementById('displayHomeTeam').textContent = homeTeam;
-    document.getElementById('displayAwayTeam').textContent = awayTeam;
-  }
-
-  document.addEventListener('DOMContentLoaded', updateLiveScoreboard);
-  document
-    .getElementById('scorerName')
-    .addEventListener('change', filterAssistOptions);
-</script>
-
-<script>
   document.addEventListener('DOMContentLoaded', () => {
-    const homeInput = document.getElementById('homeTeam');
-    const awayInput = document.getElementById('awayTeam');
+    updateLiveScoreboard();
 
-    function updateLiveScoreNames() {
-      const homeVal = homeInput.value.trim();
-      const awayVal = awayInput.value.trim();
+    document.getElementById('scorerName').addEventListener('change', () => {
+      const scorer = document.getElementById('scorerName').value;
+      const assist = document.getElementById('assistName');
+      assist.querySelectorAll('option').forEach((opt) => {
+        opt.style.display = opt.value === scorer ? 'none' : '';
+      });
+    });
 
-      console.log('🏠 Home:', homeVal);
-      console.log('🚌 Away:', awayVal);
-
-      // 👇 Only update scoreboard text — do not hide inputs
-      if (homeVal) {
-        document.getElementById('displayHomeTeam').textContent = homeVal;
-      }
-
-      if (awayVal) {
-        document.getElementById('displayAwayTeam').textContent = awayVal;
-      }
-    }
-
+    // 👇 Unified click handler to check for team assignment completion
     document.addEventListener('click', (e) => {
-      const homeVal = document.getElementById('homeTeam').value.trim();
-      const awayVal = document.getElementById('awayTeam').value.trim();
-      const wrapper = document.getElementById('teamInputsWrapper');
-
-      // Do nothing if you're still typing
       const clickedInsideInputs =
         e.target.closest('#teamInputsWrapper') ||
         e.target.id === 'homeTeam' ||
         e.target.id === 'awayTeam';
 
-      if (clickedInsideInputs) return;
-
-      // ✅ If both fields are filled and click was outside, hide the wrapper
-      if (homeVal && awayVal) {
-        wrapper.style.setProperty('display', 'none', 'important');
-        console.log('🎯 Inputs filled — hiding after click');
+      if (!clickedInsideInputs) {
+        checkAndHideInputs(); // ✅ Checks and hides only once
       }
     });
-
-    // Listen for changes and update names in scoreboard
-    homeInput.addEventListener('input', updateLiveScoreNames);
-    awayInput.addEventListener('input', updateLiveScoreNames);
-
-    // Run once on load in case values are pre-filled
-    updateLiveScoreNames();
   });
 </script>
 

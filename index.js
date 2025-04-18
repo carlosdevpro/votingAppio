@@ -8,13 +8,14 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const crypto = require('crypto');
-
 const User = require('./models/user');
 const Player = require('./models/player');
 const Match = require('./models/match');
 const { sendPasswordReset } = require('./mailer');
 const { sendVoteReminder, sendFinalReminder } = require('./sms');
 const updatePlayerStats = require('./utils/updatePlayerStats');
+
+app.locals.teamName = 'Your Team Name'; // You can later replace this with a DB config
 
 // 🟢 Connect to MongoDB
 console.log('Using MONGO_URI:', process.env.MONGO_URI);
