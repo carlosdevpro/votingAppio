@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+
+<div class="text-center animate__animated animate__fadeIn">
+  <p class="text-uppercase text-muted fs-5 mb-2">Player of the Match</p>
+
+  <h1 class="display-2 fw-bold text-success"><%= winners %></h1>
+
+  <p class="mt-4 text-muted">Redirecting to dashboard...</p>
+</div>
+
+<script>
+  setTimeout(() => {
+    window.location.href = '/admin';
+  }, 4000);
+</script>
+
+<!-- 🎊 Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+  confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+</script>
+
+<%- include('partials/footer') %>

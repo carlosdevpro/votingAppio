@@ -445,6 +445,13 @@
   document.addEventListener('DOMContentLoaded', () => {
     updateLiveScoreboard();
 
+    document
+      .getElementById('homeTeam')
+      .addEventListener('input', updateLiveScoreboard);
+    document
+      .getElementById('awayTeam')
+      .addEventListener('input', updateLiveScoreboard);
+
     document.getElementById('scorerName').addEventListener('change', () => {
       const scorer = document.getElementById('scorerName').value;
       const assist = document.getElementById('assistName');

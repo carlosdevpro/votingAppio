@@ -1251,64 +1251,71 @@ app.post('/admin/players/add', requireLogin, requireAdmin, async (req, res) => {
 
 // SUBMIT PARENTS VOTES FOR MOTM WINNER
 app.post('/admin/submit-parent-motm', async (req, res) => {
-  const voters = await User.find({ hasVoted: true, votedFor: { $ne: null } });
+  try {
+    const voters = await User.find({ hasVoted: true, votedFor: { $ne: null } });
 
-  if (!voters.length) {
-    req.flash('error', 'No parent votes have been submitted.');
-    return res.redirect('/admin');
+    if (!voters.length) {
+      req.flash('error', 'No parent votes have been submitted.');
+      return res.redirect('/admin');
+    }
+
+    // Tally votes
+    const voteCounts = {};
+    for (const voter of voters) {
+      const id = voter.votedFor.toString();
+      voteCounts[id] = (voteCounts[id] || 0) + 1;
+    }
+
+    // Find the player(s) with most votes (handle ties)
+    const maxVotes = Math.max(...Object.values(voteCounts));
+    const winners = Object.keys(voteCounts).filter(
+      (id) => voteCounts[id] === maxVotes
+    );
+
+    const winnerPlayers = await Player.find({ _id: { $in: winners } });
+
+    // Update match with winners
+    const latestMatch = await Match.findOne().sort({ date: -1 });
+    if (!latestMatch) {
+      req.flash('error', 'No match found to update.');
+      return res.redirect('/admin');
+    }
+
+    // Save full name string instead of just ID
+    const winnerNames = winnerPlayers.map(
+      (p) => `${p.firstName} ${p.lastName}`
+    );
+    latestMatch.parentMotm =
+      winnerNames.length === 1
+        ? winnerNames[0]
+        : winnerNames.join(', ') + ' (Joint Winners)';
+    await latestMatch.save();
+
+    // Increment stats
+    for (const player of winnerPlayers) {
+      player.parentMotmWins = (player.parentMotmWins || 0) + 1;
+      await player.save();
+    }
+
+    // Reset voters
+    await User.updateMany(
+      { hasVoted: true },
+      { $set: { hasVoted: false, votedFor: null } }
+    );
+
+    // Show new animated page (winner.ejs)
+    const displayNames =
+      winnerPlayers.length === 1
+        ? `${winnerPlayers[0].firstName} ${winnerPlayers[0].lastName}`
+        : winnerPlayers.map((p) => `${p.firstName} ${p.lastName}`).join(', ') +
+          ' (Joint Winners)';
+
+    res.render('winner', { winners: displayNames });
+  } catch (err) {
+    console.error('❌ Error submitting MOTM:', err);
+    req.flash('error', 'Something went wrong submitting the winner.');
+    res.redirect('/admin');
   }
-
-  // Tally votes
-  const voteCounts = {};
-  for (const voter of voters) {
-    const id = voter.votedFor.toString();
-    voteCounts[id] = (voteCounts[id] || 0) + 1;
-  }
-
-  // Find max votes
-  const maxVotes = Math.max(...Object.values(voteCounts));
-
-  // Get all players who received max votes
-  const winnerIds = Object.keys(voteCounts).filter(
-    (id) => voteCounts[id] === maxVotes
-  );
-
-  const winners = await Player.find({ _id: { $in: winnerIds } });
-
-  if (!winners.length) {
-    req.flash('error', 'Winning player(s) not found.');
-    return res.redirect('/admin');
-  }
-
-  // Format names
-  const names = winners.map((w) => `${w.firstName} ${w.lastName}`);
-  const displayNames =
-    names.length > 1 ? `${names.join(', ')} (Joint Winners)` : names[0];
-
-  // Update match
-  const latestMatch = await Match.findOne().sort({ date: -1 });
-  if (!latestMatch) {
-    req.flash('error', 'No match found to update.');
-    return res.redirect('/admin');
-  }
-
-  latestMatch.parentMotm = displayNames;
-  await latestMatch.save();
-
-  // Update player stats
-  for (const w of winners) {
-    w.parentMotmWins = (w.parentMotmWins || 0) + 1;
-    await w.save();
-  }
-
-  // Reset votes
-  await User.updateMany(
-    { hasVoted: true },
-    { $set: { hasVoted: false, votedFor: null } }
-  );
-
-  req.flash('success', `${displayNames} has been voted Player of the Match!`);
-  res.redirect('/admin');
 });
 
 // Reset parent votes
