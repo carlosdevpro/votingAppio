@@ -12,13 +12,26 @@
           Hello, <strong><%= user.firstName %> <%= user.lastName %></strong>!
         </p>
 
-        <% if (!user.isPlayer && user.linkedPlayer) { %>
+        <% if (user.linkedPlayer) { %>
         <p>
           Linked to:
           <strong>
             <%= user.linkedPlayer.firstName %> <%= user.linkedPlayer.lastName %>
           </strong>
         </p>
+        <% } %>
+
+        <!-- Show Become Admin button if no main admin exists -->
+        <% if (showBecomeAdmin) { %>
+        <div class="d-flex justify-content-center">
+          <button
+            class="btn btn-warning w-50 py-2 px-4 text-black fw-bold my-3"
+            data-bs-toggle="modal"
+            data-bs-target="#adminModal"
+          >
+            🔐 Become Admin
+          </button>
+        </div>
         <% } %>
 
         <!-- Main User Buttons -->
@@ -33,9 +46,9 @@
           <a href="/stats" class="btn btn-neon-sm">📊 Player Stats</a>
           <a href="/matches" class="btn btn-neon-sm">📅 Match Results</a>
 
-          <% if (user.isAdmin) { %>
+          <% } %> <% if (user?.isAdmin) { %>
           <a href="/admin" class="btn btn-warning">🛠 Admin Dashboard</a>
-          <% } %> <% } %>
+          <% } %>
         </div>
 
         <!-- Logout Button -->
@@ -43,7 +56,6 @@
         <form action="/logout" method="POST" class="d-grid">
           <button class="btn btn-danger">Log Out</button>
         </form>
-
         <% } else { %>
         <!-- Not Logged In -->
         <div class="d-grid gap-2 mt-4">
@@ -56,4 +68,56 @@
   </div>
 </div>
 
+<!-- 🔐 Become Admin Modal -->
+<div
+  class="modal fade"
+  id="adminModal"
+  tabindex="-1"
+  aria-labelledby="adminModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <form action="/become-main-admin" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminModalLabel">Become Admin</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="password"
+            name="adminPassword"
+            class="form-control"
+            placeholder="Enter Admin Password"
+            required
+          />
+          <% if (messages && messages.error && messages.error.length > 0) { %>
+          <div class="alert alert-danger mt-3"><%= messages.error[0] %></div>
+          <% } %>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger w-100">
+            Confirm Admin Access
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <%- include('partials/footer') %>
+
+<!-- Reopen modal if error -->
+<script>
+  document
+    .getElementById('adminAccessBtn') // your "Become Admin" button
+    ?.addEventListener('click', function () {
+      const modal = new bootstrap.Modal(document.getElementById('adminModal'));
+      modal.show();
+    });
+</script>

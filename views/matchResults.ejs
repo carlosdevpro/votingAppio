@@ -89,17 +89,21 @@
     <!-- Red Cards -->
     <% match.redCards.forEach(player => { %>
     <div class="text-danger ms-2">🟥 <%= player.name %></div>
-    <% }) %> <% console.log('🧪 Opposition MOTM:', match.motmOpposition); %>
-
-    <!-- ✅ Opposition MOTM (show it even if no red cards exist) -->
-    <% if (match.motmOpposition) { %>
+    <% }) %> <% console.log('🧪 Opposition MOTM:', match.motmOpposition); %> <%
+    if (match.motmOpposition) { %>
     <p class="text-info mt-2">
       🎖 Opposition MOTM: <strong><%= match.motmOpposition || 'None' %></strong>
     </p>
-
     <% } %> <% if (match.parentMotm) { %>
-    <p class="text-success">
-      👪 Parents' MOTM: <strong><%= match.parentMotm %></strong>
+    <p class="text-warning mt-2">
+      🏅 Parent MOTM: <% if (typeof match.parentMotm === 'string') { %>
+      <strong><%= match.parentMotm %></strong>
+      <% } else { %>
+      <strong
+        ><%= match.parentMotm.firstName %> <%= match.parentMotm.lastName
+        %></strong
+      >
+      <% } %>
     </p>
     <% } %>
 

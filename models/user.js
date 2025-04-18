@@ -65,6 +65,8 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Player',
   },
+  isAdmin: { type: Boolean, default: false },
+  isMainAdmin: { type: Boolean, default: false },
 });
 
 // Login helper

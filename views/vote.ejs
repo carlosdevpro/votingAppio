@@ -1,64 +1,50 @@
-<%- include('partials/header') %> <%- include('partials/alerts') %>
+<%- include('partials/header') %>
 
-<!-- Neon Vote Page -->
-<div class="page-center">
-  <div class="container">
-    <div class="text-center">
-      <h1 class="page-title">🗳 Vote for Player of the Match</h1>
-    </div>
+<div class="container mt-5">
+  <h1 class="text-center mb-4">Vote for Player of the Match 🗳</h1>
 
-    <!-- ✅ Delayed vote info alert -->
-    <% if (user.hasVoted) { %>
-    <div id="already-voted" class="alert alert-info text-center d-none">
-      ✅ You have already voted!
-    </div>
-    <% } %>
-
-    <!-- Vote form -->
-    <% if (!user.hasVoted) { %>
-    <form method="POST" action="/vote">
-      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <% players.forEach((player, index) => { %>
-        <div class="col">
-          <div
-            class="card shadow-sm h-100 text-center p-3 <%= index % 2 === 0 ? 'card-alt-a' : 'card-alt-b' %>"
-          >
-            <h5 class="card-title neon">
-              <%= player.firstName %> <%= player.lastName %>
-            </h5>
-            <p>Shirt #<%= player.shirtNumber %></p>
-            <button
-              type="submit"
-              name="playerId"
-              value="<%= player._id %>"
-              class="btn btn-neon-sm w-100"
-            >
-              Vote 🗳️
-            </button>
-          </div>
-        </div>
-        <% }); %>
-      </div>
-    </form>
-    <% } %>
-
-    <!-- Back button -->
-    <div class="text-center mt-4">
-      <a href="/" class="btn btn-neon-sm btn-block">🏠 Back to Home</a>
-    </div>
+  <% if (messages.error) { %>
+  <div class="alert alert-danger text-center"><%= messages.error %></div>
+  <% } %> <% if (messages.success) { %>
+  <div class="alert alert-success text-center"><%= messages.success %></div>
+  <% } %> <% if (!matchAvailable) { %>
+  <div class="alert alert-warning text-center">
+    🕓 No match available to vote on currently. Please check back later.
   </div>
-</div>
+  <% } else { %>
+  <form
+    action="/vote"
+    method="POST"
+    class="card p-4 shadow-lg mx-auto"
+    style="max-width: 600px"
+  >
+    <p class="mb-3 text-center">
+      Logged in as: <strong><%= user.firstName %> <%= user.lastName %></strong>
+    </p>
+    <p class="mb-3 text-center">Select a player to vote as Man of the Match:</p>
 
-<!-- ✅ Delayed reveal script placed safely below -->
-<script>
-  window.addEventListener('load', function () {
-    setTimeout(function () {
-      const infoBox = document.getElementById('already-voted');
-      if (infoBox) {
-        infoBox.classList.remove('d-none');
-      }
-    }, 2000); // 2 seconds
-  });
-</script>
+    <% players.forEach(player => { %>
+    <div class="form-check mb-2">
+      <input
+        class="form-check-input"
+        type="radio"
+        name="playerId"
+        value="<%= player._id %>"
+        id="player-<%= player._id %>"
+        required
+      />
+      <label class="form-check-label" for="player-<%= player._id %>">
+        <%= player.firstName %> <%= player.lastName %> (#<%= player.shirtNumber
+        %>)
+      </label>
+    </div>
+    <% }) %>
+
+    <button type="submit" class="btn btn-primary mt-4 w-100">
+      ✅ Submit Vote
+    </button>
+  </form>
+  <% } %>
+</div>
 
 <%- include('partials/footer') %>

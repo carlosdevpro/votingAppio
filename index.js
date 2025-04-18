@@ -14,6 +14,7 @@ const Match = require('./models/match');
 const { sendPasswordReset } = require('./mailer');
 const { sendVoteReminder, sendFinalReminder } = require('./sms');
 const updatePlayerStats = require('./utils/updatePlayerStats');
+const { isLoggedIn } = require('./middleware');
 
 app.locals.teamName = 'Your Team Name'; // You can later replace this with a DB config
 
@@ -81,10 +82,49 @@ const requireAdmin = async (req, res, next) => {
 // 🌐 Homepage
 app.get('/', async (req, res) => {
   let user = null;
+  let showBecomeAdmin = false;
+  const error = req.flash('error'); // ✅ grab flash error message
+  const success = req.flash('success'); // if needed
+
   if (req.session.user_id) {
     user = await User.findById(req.session.user_id).populate('linkedPlayer');
   }
-  res.render('home', { user });
+
+  if (!(await User.exists({ isMainAdmin: true })) && user) {
+    showBecomeAdmin = true;
+  }
+
+  res.render('home', { user, showBecomeAdmin, error, success });
+});
+
+// ✅ Main Admin Setup Route
+app.post('/become-main-admin', async (req, res) => {
+  const { adminPassword } = req.body;
+
+  if (adminPassword !== process.env.MAIN_ADMIN_PASSWORD) {
+    req.flash('error', 'Incorrect admin password');
+    return res.redirect('/');
+  }
+
+  const existing = await User.findOne({ isMainAdmin: true });
+  if (existing) {
+    req.flash('error', 'Main admin already set up.');
+    return res.redirect('/');
+  }
+
+  // Fetch current user
+  const user = await User.findById(req.session.user_id);
+  if (!user) {
+    req.flash('error', 'You must be logged in to become admin.');
+    return res.redirect('/');
+  }
+
+  user.isAdmin = true;
+  user.isMainAdmin = true;
+  await user.save();
+
+  req.flash('success', 'You are now the main admin!');
+  res.redirect('/admin');
 });
 
 // 📝 Registration pages
@@ -283,59 +323,64 @@ app.post('/login', async (req, res) => {
   });
 });
 
-// Voting routes
-app.get('/vote', requireLogin, async (req, res) => {
+// ✅ Voting GET route - only opens after a match ends and before a winner is revealed
+app.get('/vote', isLoggedIn, async (req, res) => {
   const user = await User.findById(req.session.user_id);
 
-  if (!user || user.isPlayer) {
-    req.flash('error', 'Players cannot access the voting page.');
+  if (!user || !user.isParent) {
+    req.flash('error', 'Only parents can vote.');
     return res.redirect('/');
   }
 
-  const players = await Player.find();
-  res.render('vote', { players, user });
+  // Only allow voting on today's match with no parent MOTM submitted
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const match = await Match.findOne({
+    date: { $gte: today },
+    parentMotm: null,
+  }).sort({ date: -1 });
+
+  if (!match) {
+    req.flash('error', '🕓 No match available to vote on currently.');
+    return res.redirect('/');
+  }
+
+  if (user.hasVoted) {
+    req.flash('error', 'You have already voted.');
+    return res.redirect('/');
+  }
+
+  const players = await Player.find({});
+  res.render('vote', { user, players, matchAvailable: true });
 });
 
-app.post('/vote', requireLogin, async (req, res) => {
-  try {
-    const user = await User.findById(req.session.user_id);
+app.post('/vote', isLoggedIn, async (req, res) => {
+  const user = await User.findById(req.session.user_id);
 
-    // Prevent players from voting
-    if (!user || user.isPlayer) {
-      req.flash('error', 'Players are not allowed to vote.');
-      return res.redirect('/');
-    }
+  if (!user || !user.isParent || user.hasVoted) {
+    req.flash('error', 'You are not eligible to vote or have already voted.');
+    return res.redirect('/');
+  }
 
-    // If already voted, just redirect — NO flash
-    if (user.hasVoted) {
-      return res.redirect('/vote');
-    }
-
-    // Record vote
-    await Player.findByIdAndUpdate(req.body.playerId, {
-      $inc: { motmVotes: 1 },
-    });
-    user.hasVoted = true;
-    await user.save();
-
-    const votedPlayer = await Player.findById(req.body.playerId);
-    if (!votedPlayer) {
-      req.flash('error', 'Player not found.');
-      return res.redirect('/vote');
-    }
-
-    user.hasVoted = true;
-    user.votedFor = votedPlayer._id;
-    await user.save();
-
-    // Show only success
-    req.flash('success', '✅ Your vote has been submitted.');
-    return res.redirect('/vote');
-  } catch (err) {
-    console.error('❌ Vote submission error:', err);
-    req.flash('error', 'Something went wrong. Please try again.');
+  const { playerId } = req.body;
+  if (!playerId) {
+    req.flash('error', 'No player selected.');
     return res.redirect('/vote');
   }
+
+  const player = await Player.findById(playerId);
+  if (!player) {
+    req.flash('error', 'Selected player not found.');
+    return res.redirect('/vote');
+  }
+
+  user.votedFor = player._id;
+  user.hasVoted = true;
+  await user.save();
+
+  req.flash('success', '✅ Your vote has been submitted.');
+  res.redirect('/');
 });
 
 // Reset votes
@@ -651,15 +696,14 @@ app.post(
 );
 
 // Show all saved matches
-// ✅ GET route to view all matches
 app.get('/matches', async (req, res) => {
-  const matches = await Match.find().sort({ date: -1 });
+  const matches = await Match.find().sort({ date: -1 }).populate('parentMotm'); // ✅ allows match.parentMotm.firstName to work
 
   console.log('✅ Current user:', res.locals.currentUser?.email);
 
   res.render('matchResults', {
     matches,
-    currentUser: res.locals.currentUser, // 👈 This is the key
+    currentUser: res.locals.currentUser,
     messages: req.flash(),
   });
 });
@@ -751,7 +795,7 @@ app.delete(
       }
 
       // ✅ Revert Parent MOTM (including joint winners)
-      if (match.parentMotm) {
+      if (match.parentMotm && typeof match.parentMotm === 'string') {
         const names = match.parentMotm
           .replace(' (Joint Winners)', '')
           .split(', ')
@@ -1036,7 +1080,8 @@ app.post('/admin/live-match/end', async (req, res) => {
       yellowCards: JSON.parse(yellowCards),
       redCards: JSON.parse(redCards),
       motmOpposition,
-      parentMotm,
+      parentMotm: null,
+      date: new Date(),
     });
 
     await match.save();
@@ -1157,9 +1202,11 @@ app.get('/admin/secret-tools', requireLogin, async (req, res) => {
   }
 
   // ✅ Fetch voters
-  const voters = await User.find({ isParent: true, hasVoted: true }).populate(
-    'votedFor linkedPlayer'
-  );
+  const voters = await User.find({
+    isParent: true,
+    hasVoted: true,
+    votedFor: { $ne: null }, // ⬅️ Make sure vote was actually saved
+  }).populate('votedFor linkedPlayer');
 
   // ✅ Render with voters data
   res.render('adminSecretTools', { voters });
@@ -1203,70 +1250,66 @@ app.post('/admin/players/add', requireLogin, requireAdmin, async (req, res) => {
 });
 
 // SUBMIT PARENTS VOTES FOR MOTM WINNER
-app.post(
-  '/admin/submit-parent-motm',
-  requireLogin,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+app.post('/admin/submit-parent-motm', async (req, res) => {
+  const voters = await User.find({ hasVoted: true, votedFor: { $ne: null } });
 
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
-
-      const match = await Match.findOne({
-        date: { $gte: todayStart, $lte: todayEnd },
-      }).sort({ date: -1 });
-
-      if (!match) {
-        req.flash('error', '❌ No match found for today.');
-        return res.redirect('/admin');
-      }
-
-      const votedPlayers = await Player.find({ motmVotes: { $gt: 0 } }).sort({
-        motmVotes: -1,
-      });
-
-      if (!votedPlayers.length) {
-        req.flash('error', '❌ No votes to submit.');
-        return res.redirect('/admin');
-      }
-
-      const highestVotes = votedPlayers[0].motmVotes;
-      const topPlayers = votedPlayers.filter(
-        (p) => p.motmVotes === highestVotes
-      );
-
-      const winnerNames = topPlayers.map((p) => `${p.firstName} ${p.lastName}`);
-
-      // Add (Joint Winners) if there's a tie
-      const formattedWinnerText =
-        winnerNames.length > 1
-          ? `${winnerNames.join(', ')} (Joint Winners)`
-          : winnerNames[0];
-
-      // Save to match
-      match.parentMotm = formattedWinnerText;
-      await match.save();
-
-      for (const p of topPlayers) {
-        p.parentMotmWins += 1;
-        await p.save();
-      }
-
-      await Player.updateMany({}, { $set: { motmVotes: 0 } });
-      await User.updateMany({ isParent: true }, { $set: { hasVoted: false } });
-
-      req.flash('success', `✅ Parents' MOTM: ${formattedWinnerText}`);
-      res.redirect('/admin');
-    } catch (err) {
-      console.error('❌ Error submitting parent MOTM:', err);
-      req.flash('error', 'Something went wrong submitting the votes.');
-      res.redirect('/admin');
-    }
+  if (!voters.length) {
+    req.flash('error', 'No parent votes have been submitted.');
+    return res.redirect('/admin');
   }
-);
+
+  // Tally votes
+  const voteCounts = {};
+  for (const voter of voters) {
+    const id = voter.votedFor.toString();
+    voteCounts[id] = (voteCounts[id] || 0) + 1;
+  }
+
+  // Find max votes
+  const maxVotes = Math.max(...Object.values(voteCounts));
+
+  // Get all players who received max votes
+  const winnerIds = Object.keys(voteCounts).filter(
+    (id) => voteCounts[id] === maxVotes
+  );
+
+  const winners = await Player.find({ _id: { $in: winnerIds } });
+
+  if (!winners.length) {
+    req.flash('error', 'Winning player(s) not found.');
+    return res.redirect('/admin');
+  }
+
+  // Format names
+  const names = winners.map((w) => `${w.firstName} ${w.lastName}`);
+  const displayNames =
+    names.length > 1 ? `${names.join(', ')} (Joint Winners)` : names[0];
+
+  // Update match
+  const latestMatch = await Match.findOne().sort({ date: -1 });
+  if (!latestMatch) {
+    req.flash('error', 'No match found to update.');
+    return res.redirect('/admin');
+  }
+
+  latestMatch.parentMotm = displayNames;
+  await latestMatch.save();
+
+  // Update player stats
+  for (const w of winners) {
+    w.parentMotmWins = (w.parentMotmWins || 0) + 1;
+    await w.save();
+  }
+
+  // Reset votes
+  await User.updateMany(
+    { hasVoted: true },
+    { $set: { hasVoted: false, votedFor: null } }
+  );
+
+  req.flash('success', `${displayNames} has been voted Player of the Match!`);
+  res.redirect('/admin');
+});
 
 // Reset parent votes
 app.post(
@@ -1304,6 +1347,53 @@ app.get('/admin/users', requireLogin, requireAdmin, async (req, res) => {
     req.flash('error', 'Failed to load registered users.');
     res.redirect('/admin');
   }
+});
+
+// 🔐 Admin Dashboard Route
+app.get('/admin/dashboard', async (req, res) => {
+  // Optional: protect this route with an isAdmin check
+  if (!req.session.user_id) {
+    req.flash('error', 'You must be logged in to view this page.');
+    return res.redirect('/');
+  }
+
+  const user = await User.findById(req.session.user_id);
+  if (!user || !user.isAdmin) {
+    req.flash('error', 'Access denied. Admins only.');
+    return res.redirect('/');
+  }
+
+  res.render('admin/dashboard', { user });
+});
+
+// ✅ Main Admin Setup Route
+app.post('/become-main-admin', async (req, res) => {
+  const { adminPassword } = req.body;
+
+  if (adminPassword !== process.env.MAIN_ADMIN_PASSWORD) {
+    req.flash('error', 'Incorrect admin password');
+    return res.redirect('/');
+  }
+
+  const existing = await User.findOne({ isMainAdmin: true });
+  if (existing) {
+    req.flash('error', 'Main admin already set up.');
+    return res.redirect('/');
+  }
+
+  // Fetch current user
+  const user = await User.findById(req.session.user_id);
+  if (!user) {
+    req.flash('error', 'You must be logged in to become admin.');
+    return res.redirect('/');
+  }
+
+  user.isAdmin = true;
+  user.isMainAdmin = true;
+  await user.save();
+
+  req.flash('success', 'You are now the main admin!');
+  res.redirect('/'); // 👈 Redirects to homepage instead of /admin/dashboard
 });
 
 // Start server
