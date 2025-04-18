@@ -867,7 +867,7 @@ app.put('/admin/matches/:id', requireLogin, requireAdmin, async (req, res) => {
       secondHalfScorers,
       yellowCards,
       redCards,
-      oppositionMotm,
+      motmOpposition,
       parentsMotm,
     } = req.body;
 
@@ -915,9 +915,9 @@ app.put('/admin/matches/:id', requireLogin, requireAdmin, async (req, res) => {
         }
       }
 
-      if (existingMatch.oppositionMotm) {
+      if (existingMatch.motmOpposition) {
         const player = await Player.findOne({
-          fullName: existingMatch.oppositionMotm,
+          fullName: existingMatch.motmOpposition,
         });
         if (player) {
           player.motmOpposition -= 1;
@@ -969,8 +969,8 @@ app.put('/admin/matches/:id', requireLogin, requireAdmin, async (req, res) => {
       }
     }
 
-    if (oppositionMotm) {
-      const player = await Player.findOne({ fullName: oppositionMotm });
+    if (motmOpposition) {
+      const player = await Player.findOne({ fullName: motmOpposition });
       if (player) {
         player.motmOpposition += 1;
         await player.save();
@@ -995,17 +995,9 @@ app.put('/admin/matches/:id', requireLogin, requireAdmin, async (req, res) => {
       secondHalfScorers: parsedSecondHalf,
       yellowCards: parsedYellows,
       redCards: parsedReds,
-      oppositionMotm,
+      motmOpposition,
       parentsMotm,
     });
-    // await updatePlayerStats({
-    //   firstHalfScorers: match.firstHalfScorers,
-    //   secondHalfScorers: match.secondHalfScorers,
-    //   yellowCards: match.yellowCards,
-    //   redCards: match.redCards,
-    //   oppositionMotm: match.oppositionMotm,
-    //   parentMotm: match.parentMotm,
-    // });
 
     req.flash('success', '✅ Match updated successfully and stats adjusted.');
     res.redirect('/matches');
@@ -1065,15 +1057,15 @@ app.post('/admin/live-match/end', async (req, res) => {
       secondHalfScorers,
       yellowCards,
       redCards,
-      motmOpposition,
-      parentMotm,
+      motmOpposition, // ✅ corrected this
+      parentsMotm,
     } = req.body;
 
     const match = new Match({
       homeTeam,
       awayTeam,
-      homeScore,
-      awayScore,
+      homeScore: parseInt(homeScore),
+      awayScore: parseInt(awayScore),
       matchType,
       firstHalfScorers: JSON.parse(firstHalfScorers),
       secondHalfScorers: JSON.parse(secondHalfScorers),
@@ -1165,11 +1157,11 @@ app.post('/admin/live-match/end', async (req, res) => {
     }
 
     // ✅ Update Parent MOTM
-    if (parentMotm) {
+    if (parentsMotm) {
       const player = await Player.findOneAndUpdate(
         {
           $expr: {
-            $eq: [{ $concat: ['$firstName', ' ', '$lastName'] }, parentMotm],
+            $eq: [{ $concat: ['$firstName', ' ', '$lastName'] }, parentsMotm],
           },
         },
         { $inc: { parentMotmWins: 1 } },

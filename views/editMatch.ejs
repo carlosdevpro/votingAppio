@@ -184,6 +184,23 @@
         <input type="hidden" name="yellowCards" id="yellowCardsInput" />
         <input type="hidden" name="redCards" id="redCardsInput" />
 
+        <!-- Opposition MOTM -->
+        <div class="mb-3">
+          <label for="motmOpposition" class="form-label"
+            >🏅 Opposition MOTM</label
+          >
+          <select name="motmOpposition" id="motmOpposition" class="form-select">
+            <option value="">-- Select Player --</option>
+            <% players.forEach(player => { %> <% const fullName =
+            `${player.firstName} ${player.lastName}`; const selected = fullName
+            === match.motmOpposition ? 'selected' : ''; %>
+            <option value="<%= fullName %>" <%="selected" %>
+              > <%= fullName %>
+            </option>
+            <% }) %>
+          </select>
+        </div>
+
         <div class="text-center">
           <button class="btn btn-warning">💾 Update Match</button>
           <a href="/matches" class="btn btn-info">📅 Back</a>
