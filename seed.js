@@ -12,53 +12,33 @@ mongoose
   .catch((err) => console.error('❌ Connection error:', err));
 
 const players = [
-  { firstName: 'Harrison', lastName: 'Shaw', position: 'GK', shirtNumber: 99 },
-  { firstName: 'Joshua', lastName: 'Green', position: 'DEF', shirtNumber: 12 },
-  { firstName: 'Jack', lastName: 'Wood', position: 'DEF', shirtNumber: 5 },
+  { firstName: 'Mason', lastName: 'Blake', position: 'GK', shirtNumber: 1 },
+  { firstName: 'Elliot', lastName: 'Bennett', position: 'DEF', shirtNumber: 3 },
+  { firstName: 'Liam', lastName: 'Carter', position: 'DEF', shirtNumber: 5 },
+  { firstName: 'Nathan', lastName: 'Foster', position: 'DEF', shirtNumber: 7 },
   {
-    firstName: 'Freddie',
-    lastName: 'Galloway',
-    position: 'DEF',
+    firstName: 'Finley',
+    lastName: 'Armstrong',
+    position: 'MID',
     shirtNumber: 8,
   },
   {
-    firstName: 'Harry',
-    lastName: 'Leechwall',
-    position: 'MID',
-    shirtNumber: 4,
-  },
-  {
-    firstName: 'Logan',
-    lastName: 'Hepplestall',
-    position: 'MID',
-    shirtNumber: 11,
-  },
-  {
-    firstName: 'Theo',
-    lastName: 'Swallownest',
-    position: 'MID',
-    shirtNumber: 6,
-  },
-  {
-    firstName: 'Orryn',
-    lastName: 'Leggett',
+    firstName: 'Oscar',
+    lastName: 'Hamilton',
     position: 'MID',
     shirtNumber: 10,
   },
+  { firstName: 'Reuben', lastName: 'Walsh', position: 'MID', shirtNumber: 11 },
+  { firstName: 'Jude', lastName: 'Morris', position: 'MID', shirtNumber: 12 },
+  { firstName: 'Zac', lastName: 'Simpson', position: 'ST', shirtNumber: 14 },
   {
-    firstName: 'Robbie',
-    lastName: 'Bray',
-    position: 'ST',
-    shirtNumber: 15,
-  },
-  {
-    firstName: 'Lucas',
-    lastName: 'Lucas',
+    firstName: 'Charlie',
+    lastName: 'Preston',
     position: 'MID',
     shirtNumber: 17,
   },
-  { firstName: 'Rares', lastName: 'Costa', position: 'FW', shirtNumber: 13 },
-  { firstName: 'Tommy', lastName: 'Ballsack', position: 'A', shirtNumber: 21 },
+  { firstName: 'Riley', lastName: 'White', position: 'ST', shirtNumber: 19 },
+  { firstName: 'Jake', lastName: 'Nelson', position: 'A', shirtNumber: 21 },
 ];
 
 const seedPlayers = async () => {
