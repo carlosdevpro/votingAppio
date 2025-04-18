@@ -1,7 +1,11 @@
 <%- include('partials/header') %> <%- include('partials/alerts') %>
 
 <div class="container my-5">
-  <h2 class="text-center mb-4">👥 Registered Users Overview</h2>
+  <div class="row justify-content-center">
+    <div class="col-auto">
+      <h2 class="text-center fw-bold">👥 Registered Users Overview</h2>
+    </div>
+  </div>
 
   <div class="text-center mb-4">
     <a href="/" class="btn btn-primary">🏠 Back to Home</a>
@@ -18,10 +22,12 @@
             <th>Parent Name</th>
             <th>Linked Player</th>
             <th>Has Voted?</th>
-            <th>📱 SMS</th>
+            <th class="d-none d-md-table-cell">📱 SMS</th>
+
             <!-- New column -->
             <th>🕓 Last Active</th>
             <!-- New column -->
+            <th>Role</th>
           </tr>
         </thead>
         <tbody>
@@ -39,7 +45,7 @@
               <span class="text-danger fw-bold">❌ No</span>
               <% } %>
             </td>
-            <td>
+            <td class="d-none d-md-table-cell">
               <form
                 action="/admin/send-reminder/<%= parent._id %>"
                 method="POST"
@@ -47,11 +53,41 @@
                 <button class="btn btn-sm btn-warning">Send</button>
               </form>
             </td>
+
             <td>
               <% if (parent.lastActive) { %> <%= new
               Date(parent.lastActive).toLocaleString('en-GB') %> <% } else { %>
               <span class="text-muted">N/A</span>
               <% } %>
+            </td>
+            <td>
+              <% if (parent._id.toString() === currentUser._id.toString() &&
+              currentUser.isMainAdmin) { %>
+              <span class="badge bg-warning text-dark fw-bold"
+                >🛡️ Main Admin</span
+              >
+              <% } else if (currentUser.isMainAdmin) { %> <% if (parent.isAdmin)
+              { %>
+              <form
+                action="/admin/demote/<%= parent._id %>"
+                method="POST"
+                style="display: inline"
+              >
+                <button class="btn btn-sm btn-danger">Demote</button>
+              </form>
+              <% } else { %>
+              <form
+                action="/admin/promote/<%= parent._id %>"
+                method="POST"
+                style="display: inline"
+              >
+                <button class="btn btn-sm btn-success">Promote</button>
+              </form>
+              <% } %> <% } else { %> <% if (parent.isAdmin) { %>
+              <span class="badge bg-success">✅ Admin</span>
+              <% } else { %>
+              <span class="badge bg-secondary">👤 Parent</span>
+              <% } %> <% } %>
             </td>
           </tr>
           <% }) %>

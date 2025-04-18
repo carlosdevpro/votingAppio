@@ -1396,6 +1396,49 @@ app.post('/become-main-admin', async (req, res) => {
   res.redirect('/'); // 👈 Redirects to homepage instead of /admin/dashboard
 });
 
+app.post('/admin/promote/:id', requireLogin, requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      user.isAdmin = true;
+      await user.save();
+      req.flash('success', `${user.firstName} is now an admin.`);
+    }
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('❌ Promotion error:', err);
+    req.flash('error', 'Failed to promote user.');
+    res.redirect('/admin/users');
+  }
+});
+
+app.post('/admin/demote/:id', requireLogin, requireAdmin, async (req, res) => {
+  try {
+    const targetUser = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.session.user_id);
+
+    if (!targetUser) {
+      req.flash('error', 'User not found.');
+      return res.redirect('/admin/users');
+    }
+
+    // Prevent demoting main admin
+    if (targetUser.isMainAdmin) {
+      req.flash('error', '❌ You cannot demote the main admin.');
+      return res.redirect('/admin/users');
+    }
+
+    targetUser.isAdmin = false;
+    await targetUser.save();
+    req.flash('success', `${targetUser.firstName} has been demoted.`);
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('❌ Demotion error:', err);
+    req.flash('error', 'Something went wrong while demoting the user.');
+    res.redirect('/admin/users');
+  }
+});
+
 // Start server
 app.listen(3000, () => {
   console.log('SERVING YOUR APP ON PORT 3000');
