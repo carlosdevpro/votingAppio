@@ -749,19 +749,26 @@ app.delete(
         }
       }
 
-      // ✅ Revert Parent MOTM
+      // ✅ Revert Parent MOTM (including joint winners)
       if (match.parentMotm) {
-        const player = await Player.findOne({
-          $expr: {
-            $eq: [
-              { $concat: ['$firstName', ' ', '$lastName'] },
-              match.parentMotm,
-            ],
-          },
-        });
-        if (player) {
-          player.parentMotmWins = Math.max((player.parentMotmWins || 0) - 1, 0);
-          await player.save();
+        const names = match.parentMotm
+          .replace(' (Joint Winners)', '')
+          .split(', ')
+          .map((n) => n.trim());
+
+        for (const fullName of names) {
+          const player = await Player.findOne({
+            $expr: {
+              $eq: [{ $concat: ['$firstName', ' ', '$lastName'] }, fullName],
+            },
+          });
+          if (player) {
+            player.parentMotmWins = Math.max(
+              (player.parentMotmWins || 0) - 1,
+              0
+            );
+            await player.save();
+          }
         }
       }
 
