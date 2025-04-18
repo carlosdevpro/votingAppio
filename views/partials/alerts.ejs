@@ -1,0 +1,40 @@
+<% let msg = (typeof messages !== 'undefined') ? messages : (typeof locals !==
+'undefined' ? locals.messages : {}); %> <% if (msg.success && msg.success.length
+> 0) { %>
+<div
+  class="floating-alert alert alert-success shadow animate__animated animate__fadeInDown text-center"
+>
+  <%= msg.success[0] %>
+</div>
+<% } %> <% if (msg.error && msg.error.length > 0) { %>
+<div
+  class="floating-alert alert alert-danger shadow animate__animated animate__fadeInDown text-center"
+>
+  <%= msg.error[0] %>
+</div>
+<% } %>
+
+<style>
+  .floating-alert {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 1rem 2rem;
+    font-weight: bold;
+    border-radius: 10px;
+    max-width: 90%;
+    opacity: 0.95;
+  }
+</style>
+
+<script>
+  setTimeout(() => {
+    const alert = document.querySelector('.floating-alert');
+    if (alert) {
+      alert.classList.add('animate__fadeOutUp');
+      setTimeout(() => alert.remove(), 1000);
+    }
+  }, 4000);
+</script>

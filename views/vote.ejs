@@ -1,4 +1,4 @@
-<%- include('partials/header') %>
+<%- include('partials/header') %> <%- include('partials/alerts') %>
 
 <!-- Neon Vote Page -->
 <div class="page-center">
@@ -6,25 +6,6 @@
     <div class="text-center">
       <h1 class="page-title">🗳 Vote for Player of the Match</h1>
     </div>
-
-    <!-- Flash messages -->
-    <% if (messages.success && messages.success.length) { %>
-    <div
-      class="alert alert-success alert-dismissible fade show text-center"
-      role="alert"
-    >
-      <%= messages.success[0] %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <% } else if (messages.error && messages.error.length) { %>
-    <div
-      class="alert alert-danger alert-dismissible fade show text-center"
-      role="alert"
-    >
-      <%= messages.error[0] %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <% } %>
 
     <!-- ✅ Delayed vote info alert -->
     <% if (user.hasVoted) { %>

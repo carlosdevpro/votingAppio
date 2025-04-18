@@ -1,6 +1,10 @@
 <nav class="navbar glassy-navbar fixed-top">
   <div class="container-fluid justify-content-center position-relative">
-    <a class="navbar-brand d-flex align-items-center" href="/">
+    <a
+      id="secretTrigger"
+      class="navbar-brand d-flex align-items-center"
+      href="/"
+    >
       <span class="me-2">⚽</span>
       <span id="teamName" class="brand-typewriter">Wombwell Town U12s</span>
     </a>
@@ -11,29 +15,42 @@
   document.addEventListener('DOMContentLoaded', () => {
     const secretEl = document.getElementById('secretTrigger');
     let pressTimer;
+    let activated = false;
 
     if (!secretEl) {
-      console.log('❌ Secret trigger not found');
+      console.log('❌ secretTrigger not found on this page');
       return;
     }
 
     // Desktop
-    secretEl.addEventListener('mousedown', () => {
+    secretEl.addEventListener('mousedown', (e) => {
       pressTimer = setTimeout(() => {
+        activated = true;
         window.location.href = '/admin/secret-tools';
       }, 5000);
     });
 
-    secretEl.addEventListener('mouseup', () => clearTimeout(pressTimer));
+    secretEl.addEventListener('mouseup', (e) => {
+      clearTimeout(pressTimer);
+      if (activated) {
+        e.preventDefault();
+        activated = false;
+      }
+    });
+
     secretEl.addEventListener('mouseleave', () => clearTimeout(pressTimer));
 
     // Mobile
     secretEl.addEventListener('touchstart', () => {
       pressTimer = setTimeout(() => {
+        activated = true;
         window.location.href = '/admin/secret-tools';
       }, 5000);
     });
 
-    secretEl.addEventListener('touchend', () => clearTimeout(pressTimer));
+    secretEl.addEventListener('touchend', () => {
+      clearTimeout(pressTimer);
+      activated = false;
+    });
   });
 </script>

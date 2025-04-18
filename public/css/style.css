@@ -242,3 +242,81 @@ a:hover,
     border-color: transparent;
   }
 }
+.floating-alert {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: auto;
+  max-width: 90%;
+  padding: 1rem 2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  animation: fadeOut 4s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+.btn-outline-warning {
+  background-color: #ffc107 !important;
+  color: black !important;
+  border: none;
+}
+
+.btn-outline-success {
+  background-color: #198754 !important;
+  color: white !important;
+  border: none;
+}
+
+.btn-outline-info {
+  background-color: #0dcaf0 !important;
+  color: white !important;
+  border: none;
+}
+.btn-outline-warning:hover {
+  background-color: #e0a800 !important;
+}
+
+.btn-outline-success:hover {
+  background-color: #157347 !important;
+}
+
+.btn-outline-info:hover {
+  background-color: #31d2f2 !important;
+}
+/* Match Results (cyan) hover */
+.btn-info {
+  background-color: #0dcaf0;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-info:hover {
+  background-color: #0bbbe1; /* slightly darker on hover */
+}
+
+/* View Registered Users (darker cyan/blue) hover */
+.btn-outline-info {
+  background-color: #0dcaf0;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-outline-info:hover {
+  background-color: #0bbbe1;
+}

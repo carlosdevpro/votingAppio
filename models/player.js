@@ -42,6 +42,7 @@ const playerSchema = new Schema({
     enum: ['GK', 'DEF', 'MID', 'ST'], // Only allow these values
     required: true,
   },
+  isPlayer: { type: Boolean, default: true },
 });
 
 module.exports = mongoose.model('Player', playerSchema);

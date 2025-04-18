@@ -35,7 +35,7 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
   })
 );
 
@@ -48,16 +48,13 @@ app.use(async (req, res, next) => {
     try {
       const user = await User.findById(req.session.user_id);
       res.locals.currentUser = user;
-      console.log('✅ Current user:', user.email);
     } catch (err) {
       console.error('❌ Error loading user:', err);
       res.locals.currentUser = null;
     }
   } else {
     res.locals.currentUser = null;
-    console.log('✅ Current user: undefined');
   }
-
   res.locals.messages = req.flash();
   next();
 });
@@ -1162,10 +1159,12 @@ app.get('/admin/secret-tools', requireLogin, async (req, res) => {
 
 // Add new player
 app.get('/admin/players/new', requireLogin, requireAdmin, (req, res) => {
-  res.render('adminAddPlayer', { messages: req.flash() });
+  console.log('🧪 Flash messages:', req.flash()); // this will be empty here — that’s okay!
+  res.render('adminAddPlayer');
 });
 
 app.post('/admin/players/add', requireLogin, requireAdmin, async (req, res) => {
+  console.log('📥 Hit POST /admin/players/add (test)');
   try {
     const { firstName, lastName, shirtNumber, position } = req.body;
 
@@ -1191,6 +1190,8 @@ app.post('/admin/players/add', requireLogin, requireAdmin, async (req, res) => {
     req.flash('error', 'Something went wrong adding the player.');
     res.redirect('/admin/players/new');
   }
+  console.log('📥 Add player route hit');
+  console.log('Request body:', req.body);
 });
 
 // SUBMIT PARENTS VOTES FOR MOTM WINNER

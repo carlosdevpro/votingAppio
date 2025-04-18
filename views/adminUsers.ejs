@@ -1,4 +1,4 @@
-<%- include('partials/header') %>
+<%- include('partials/header') %> <%- include('partials/alerts') %>
 
 <div class="container my-5">
   <h2 class="text-center mb-4">👥 Registered Users Overview</h2>
@@ -73,6 +73,8 @@
             <th>Player Name</th>
             <th>Shirt Number</th>
             <th>Position</th>
+            <th>Action</th>
+            <!-- ✅ New column -->
           </tr>
         </thead>
         <tbody>
@@ -84,12 +86,93 @@
             </td>
             <td><%= player.linkedPlayer?.shirtNumber %></td>
             <td><%= player.linkedPlayer?.position %></td>
+            <td>
+              <% if (player.linkedPlayer) { %>
+              <button
+                class="btn btn-sm btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#globalDeletePlayerModal"
+                data-player-id="<%= player.linkedPlayer._id %>"
+                data-player-name="<%= player.linkedPlayer.firstName %> <%= player.linkedPlayer.lastName %>"
+              >
+                🗑️ Delete
+              </button>
+              <% } else { %>
+              <span class="text-muted">N/A</span>
+              <% } %>
+            </td>
           </tr>
           <% }) %>
         </tbody>
       </table>
     </div>
   </div>
-</div>
 
+  <div
+    class="modal fade"
+    id="globalDeletePlayerModal"
+    tabindex="-1"
+    aria-labelledby="globalDeletePlayerModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="globalDeletePlayerModalLabel">
+            Confirm Delete
+          </h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          Are you sure you want to delete
+          <strong id="playerNamePlaceholder">this player</strong> and their
+          linked parents?
+        </div>
+        <div class="modal-footer">
+          <form method="POST" id="deletePlayerForm">
+            <input type="hidden" name="_method" value="DELETE" />
+            <button type="submit" class="btn btn-danger">🗑️ Yes, Delete</button>
+          </form>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <%- include('partials/footer') %>
+
+<script>
+  const deleteModal = document.getElementById('globalDeletePlayerModal');
+  if (deleteModal) {
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const playerId = button.getAttribute('data-player-id');
+      const playerName = button.getAttribute('data-player-name');
+
+      const form = document.getElementById('deletePlayerForm');
+      const namePlaceholder = document.getElementById('playerNamePlaceholder');
+
+      form.action = `/admin/players/${playerId}?_method=DELETE`;
+      namePlaceholder.textContent = playerName;
+    });
+  }
+
+  // Auto-hide flash messages
+  setTimeout(() => {
+    const alert = document.querySelector('.alert');
+    if (alert) {
+      alert.classList.add('fade');
+      setTimeout(() => alert.remove(), 500);
+    }
+  }, 4000);
+</script>

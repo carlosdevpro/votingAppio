@@ -1,4 +1,4 @@
-<%- include('partials/header') %>
+<%- include('partials/header') %> <%- include('partials/alerts') %>
 
 <div class="page-center">
   <div
@@ -11,57 +11,112 @@
       -webkit-backdrop-filter: blur(4px);
     "
   >
-  <div
-  class="card shadow p-4 text-white"
-  style="
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 12px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  "
->
-  <h2 class="text-center mb-4">🛠 Admin Dashboard</h2>
-
-  <% if (messages.success) { %>
-  <div class="alert alert-success text-center">
-    <%= messages.success[0] %>
-  </div>
-  <% } %>
-  <% if (messages.error) { %>
-  <div class="alert alert-danger text-center"><%= messages.error[0] %></div>
-  <% } %>
-
-  <div class="d-grid gap-2" style="max-width: 300px; margin: 0 auto">
-    <a href="/" class="btn btn-primary w-100">🏠 Back to Home</a>
-
-    <form method="POST" action="/admin/submit-parent-motm" class="d-grid">
-      <button class="btn btn-danger w-100">📣 Reveal winner of MOTM</button>
-    </form>
-
-    <button
-      class="btn btn-outline-warning w-100"
-      data-bs-toggle="modal"
-      data-bs-target="#resetParentVotesModal"
+    <div
+      class="card shadow p-4 text-white"
+      style="background-color: rgba(0, 0, 0, 0.5); border-radius: 12px"
     >
-      🔁 Reset Parent Votes
-    </button>
+      <h2 class="text-center mb-4">🛠 Admin Dashboard</h2>
 
-    <a href="/admin/live-match" class="btn btn-outline-success w-100">
-      📡 Start Live Match
-    </a>
+      <div class="d-grid gap-2" style="max-width: 300px; margin: 0 auto">
+        <a href="/" class="btn btn-primary w-100">🏠 Back to Home</a>
 
-    <a href="/matches" class="btn btn-info w-100">📅 Match Results</a>
+        <form method="POST" action="/admin/submit-parent-motm" class="d-grid">
+          <button class="btn btn-danger w-100">📣 Reveal winner of MOTM</button>
+        </form>
 
-    <a href="/admin/players/new" class="btn btn-success w-100">
-      ➕ Add New Player
-    </a>
+        <button
+          class="btn btn-outline-warning w-100"
+          data-bs-toggle="modal"
+          data-bs-target="#resetParentVotesModal"
+        >
+          🔁 Reset Parent Votes
+        </button>
 
-    <a href="/admin/users" class="btn btn-outline-info mb-3 w-100">
-      👥 View Registered Users
-    </a>
+        <a href="/admin/live-match" class="btn btn-outline-success w-100"
+          >📡 Start Live Match</a
+        >
+        <a href="/admin/players/new" class="btn btn-success w-100"
+          >➕ Add New Player</a
+        >
+        <a href="/admin/users" class="btn btn-outline-info mb-3 w-100"
+          >👥 View Registered Users</a
+        >
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- 🔁 Reset Parent Votes Modal -->
+<div
+  class="modal fade"
+  id="resetParentVotesModal"
+  tabindex="-1"
+  aria-labelledby="resetParentVotesModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="resetParentVotesModalLabel">
+          Confirm Reset
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to reset all parent votes?
+      </div>
+      <div class="modal-footer">
+        <form method="POST" action="/admin/reset-parent-votes">
+          <button type="submit" class="btn btn-danger">✅ Yes, Reset</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🗑️ Global Delete Confirmation Modal -->
+<div
+  class="modal fade"
+  id="globalDeletePlayerModal"
+  tabindex="-1"
+  aria-labelledby="globalDeletePlayerModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="globalDeletePlayerModalLabel">
+          Confirm Delete
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body text-center">
+        Are you sure you want to delete
+        <strong id="playerNamePlaceholder">this player</strong> and their linked
+        parents?
+      </div>
+      <div class="modal-footer">
+        <form method="POST" id="deletePlayerForm">
+          <input type="hidden" name="_method" value="DELETE" />
+          <button type="submit" class="btn btn-danger">🗑️ Yes, Delete</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -69,7 +124,7 @@
 <%- include('partials/footer') %>
 
 <script>
-  // Auto-hide flash messages
+  // Floating alerts auto-close
   setTimeout(() => {
     const alert = document.querySelector('.alert');
     if (alert) {
@@ -78,7 +133,7 @@
     }
   }, 4000);
 
-  // Delete modal data setup
+  // Populate delete player modal
   const deleteModal = document.getElementById('globalDeletePlayerModal');
   deleteModal.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
