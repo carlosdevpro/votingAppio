@@ -99,7 +99,7 @@
               class="form-control text-center"
               id="homeTeam"
               name="homeTeam"
-              placeholder="e.g. My Team"
+              placeholder="e.g. <%= teamName %>"
               required
             />
           </div>
@@ -259,12 +259,12 @@
     const awayInput = document.getElementById('awayTeam');
 
     if (position === 'home') {
-      homeInput.value = 'My Team';
+      homeInput.value = '<%= teamName %>';
       homeInput.readOnly = true;
       awayInput.value = '';
       awayInput.readOnly = false;
     } else {
-      awayInput.value = 'My Team';
+      awayInput.value = '<%= teamName %>';
       awayInput.readOnly = true;
       homeInput.value = '';
       homeInput.readOnly = false;
@@ -305,10 +305,10 @@
     const home = document.getElementById('homeTeam').value;
     const away = document.getElementById('awayTeam').value;
 
-    if (home === 'My Team') {
+    if (home === '<%= teamName %>') {
       document.getElementById('homeScore').value =
         parseInt(document.getElementById('homeScore').value || '0') + 1;
-    } else if (away === 'My Team') {
+    } else if (away === '<%= teamName %>') {
       document.getElementById('awayScore').value =
         parseInt(document.getElementById('awayScore').value || '0') + 1;
     }
@@ -335,10 +335,10 @@
     const home = document.getElementById('homeTeam').value;
     const away = document.getElementById('awayTeam').value;
 
-    if (home !== 'My Team') {
+    if (home !== '<%= teamName %>') {
       document.getElementById('homeScore').value =
         parseInt(document.getElementById('homeScore').value || '0') + 1;
-    } else if (away !== 'My Team') {
+    } else if (away !== '<%= teamName %>') {
       document.getElementById('awayScore').value =
         parseInt(document.getElementById('awayScore').value || '0') + 1;
     }

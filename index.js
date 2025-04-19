@@ -16,7 +16,7 @@ const { sendVoteReminder, sendFinalReminder } = require('./sms');
 const updatePlayerStats = require('./utils/updatePlayerStats');
 const { isLoggedIn } = require('./middleware');
 
-app.locals.teamName = 'Your Team Name'; // You can later replace this with a DB config
+app.locals.teamName = 'Your team name...'; // You can later replace this with a DB config
 
 // 🟢 Connect to MongoDB
 console.log('Using MONGO_URI:', process.env.MONGO_URI);
